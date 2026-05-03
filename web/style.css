@@ -1,0 +1,205 @@
+/* --- ЛАМПОВЫЙ БЛОКНОТ: ПАЛИТРА --- */
+:root {
+    --paper-bg: #f9f8f3;
+    /* Цвет слоновой кости / старой бумаги */
+    --paper-line: #e1e1e1;
+    /* Цвет линовки тетради */
+    --ink-color: #2c3e50;
+    /* Темно-синие чернила ручки */
+    --hint-ink: #7f8c8d;
+    /* Блеклые чернила для подсказок */
+    --highlight-yellow: #ffd93b;
+    /* Желтый текстовыделитель */
+    --highlight-green: #98fb98;
+    /* Зеленый маркер */
+    --highlight-orange: #ffb347;
+    /* Оранжевый маркер */
+}
+
+/* Фон в виде тетради в линейку */
+body {
+    font-family: 'Neucha', cursive, sans-serif;
+    background-color: var(--paper-bg);
+    background-image: repeating-linear-gradient(transparent, transparent 29px, var(--paper-line) 30px);
+    color: var(--ink-color);
+    margin: 0;
+    padding: 16px;
+    box-sizing: border-box;
+    font-size: 18px;
+}
+
+/* --- ВКЛАДКИ КАК БУМАЖНЫЕ ЗАКЛАДКИ --- */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--ink-color);
+    padding-bottom: 2px;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: var(--paper-bg);
+    border: 2px solid var(--ink-color);
+    border-bottom: none;
+    /* Кривые края для эффекта вырезанной бумаги */
+    border-radius: 10px 15px 0 0 / 15px 10px 0 0;
+    cursor: pointer;
+    transition: 0.2s;
+    opacity: 0.6;
+}
+
+.tab.active {
+    opacity: 1;
+    background-color: var(--highlight-yellow);
+    transform: translateY(2px);
+    /* Закладка выходит вперед */
+    box-shadow: 2px -2px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* --- КАРТОЧКИ КАК ОБРЫВКИ БУМАГИ --- */
+.block {
+    background-color: #ffffff;
+    border: 2px solid var(--ink-color);
+    /* Эффект нарисованного от руки прямоугольника */
+    border-radius: 3px 15px 5px 15px / 15px 3px 15px 5px;
+    padding: 0 16px;
+    margin-bottom: 24px;
+    box-shadow: 4px 4px 0px rgba(44, 62, 80, 0.15);
+    /* Грубая тень */
+}
+
+/* --- ПОЛЯ ВВОДА --- */
+.input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--hint-ink);
+    /* Пунктирная линия */
+}
+
+.input-row:last-child {
+    border-bottom: none;
+}
+
+label {
+    font-size: 19px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Настраиваем поля, чтобы они выглядели как текст, вписанный ручкой */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="month"],
+select {
+    border: none;
+    background: transparent;
+    text-align: right;
+    font-size: 20px;
+    font-family: 'Neucha', cursive;
+    color: #1a252f;
+    /* Цвет чернил чуть темнее для введенного текста */
+    width: 50%;
+    outline: none;
+}
+
+input::placeholder {
+    color: var(--hint-ink);
+    opacity: 0.6;
+}
+
+/* --- ЧЕКБОКСЫ --- */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 50%;
+}
+
+input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    accent-color: var(--ink-color);
+    cursor: pointer;
+}
+
+/* --- ЗАГОЛОВКИ БЛОКОВ --- */
+.section-title {
+    font-size: 16px;
+    color: var(--ink-color);
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    margin-left: 8px;
+    letter-spacing: 1px;
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    /* Волнистое подчеркивание */
+    text-decoration-color: var(--highlight-orange);
+}
+
+/* --- КНОПКИ В СТИЛЕ МАРКЕРОВ --- */
+.btn-main,
+.btn {
+    background-color: var(--highlight-yellow);
+    color: var(--ink-color);
+    border: 2px solid var(--ink-color);
+    /* Кривой контур кнопки */
+    border-radius: 15px 5px 25px 5px / 5px 15px 5px 25px;
+    width: 100%;
+    padding: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Neucha', cursive;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    box-shadow: 3px 4px 0px rgba(44, 62, 80, 0.2);
+    transition: all 0.1s;
+}
+
+.btn-main:active,
+.btn:active {
+    transform: translate(3px, 4px);
+    box-shadow: none;
+    /* Эффект нажатия на бумагу */
+}
+
+/* Разные цвета маркеров для разных действий (назначаются через style в HTML при желании, или оставляем желтыми) */
+#btn_audit {
+    background-color: var(--highlight-green);
+}
+
+#btn_history {
+    background-color: var(--highlight-orange);
+}
+
+.content {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
