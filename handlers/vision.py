@@ -5,11 +5,7 @@ from google.genai import types as genai_types
 from aiogram import Router, F, types
 
 from config import GEMINI_API_KEY
-# ДОБАВЛЕНО: импорт get_user_profile для языка
-from database import update_user_setting, get_user_profile 
-# ДОБАВЛЕНО: импорт функции клавиатуры
-from keyboards import get_main_keyboard 
-from handlers.webapp import build_app_url
+from database import update_user_setting
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -36,9 +32,9 @@ async def handle_car_photo(message: types.Message):
         Если чего-то нет на фото, оставь значение пустым.
         """
         
-        # 2. Асинхронно отправляем байты в Gemini (новый SDK)
+        # 2. Асинхронно отправляем байты в Gemini
         response = await client.aio.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.5-flash',
             contents=[
                 prompt,
                 genai_types.Part.from_bytes(
@@ -62,27 +58,22 @@ async def handle_car_photo(message: types.Message):
         # 4. Формируем красивую строку
         final_car_string = f"{car} {plate}".strip()
             
-        # 5. Сохраняем в базу
+        # 5. Сохраняем в базу (машина запишется, чтобы попасть в будущие выпадающие списки)
         await update_user_setting(message.from_user.id, "default_car", final_car_string)
 
-        # ПОЛУЧАЕМ ЯЗЫК ПОЛЬЗОВАТЕЛЯ И НОВУЮ ССЫЛКУ
-        profile = await get_user_profile(message.from_user.id)
-        user_lang = profile.get("lang", "RUS")
-        new_url = await build_app_url(message.from_user.id)
-        
         await status_msg.delete()
         
-        # ОТПРАВЛЯЕМ СООБЩЕНИЕ С ОБНОВЛЕННОЙ КНОПКОЙ
-        await message.answer(
+        # НОВЫЙ ЧИСТЫЙ ТЕКСТ БЕЗ КНОПОК
+        final_text = (
             f"🚗 **Машина успешно распознана!**\n\n"
             f"**Авто:** {car}\n"
             f"**Номер:** {plate}\n\n"
-            f"✅ *Теперь {final_car_string} будет автоматически подставляться в твое Web-приложение!*",
-            parse_mode="Markdown",
-            reply_markup=get_main_keyboard(user_lang, new_url) # <--- ПЕРЕДАЕМ НОВУЮ ССЫЛКУ В КНОПКУ
+            f"✅ Отличный аппарат! Введи его один раз при заполнении следующей смены, и он навсегда сохранится в твоем выпадающем списке гаража."
         )
+        
+        await message.answer(final_text, parse_mode="Markdown")
         
     except Exception as e:
         logger.error(f"Vision Error: {e}", exc_info=True)
-        # Теперь бот выведет конкретную ошибку прямо в чат, чтобы мы сразу ее увидели!
+        # Бот выведет конкретную ошибку прямо в чат
         await status_msg.edit_text(f"⚠️ Ошибка при анализе фото: {str(e)}")

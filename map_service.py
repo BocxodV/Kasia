@@ -4,18 +4,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 async def get_coordinates(city_name: str):
-    """Переводит название города в GPS координаты (долгота, широта)."""
     url = "https://nominatim.openstreetmap.org/search"
-    params = {
-        "q": city_name,
-        "format": "json",
-        "limit": 1
-    }
-    # Добавили "Accept-Encoding": "gzip, deflate", чтобы сервер не слал нам формат "br"
-    headers = {
-        "User-Agent": "eKsiegowaBot_Logistics/1.0",
-        "Accept-Encoding": "gzip, deflate" 
-    }
+    params = {"q": city_name, "format": "json", "limit": 1}
+    headers = {"User-Agent": "eKsiegowaBot_Alex_Pro/1.0"}
     
     async with aiohttp.ClientSession() as session:
         try:
@@ -25,48 +16,40 @@ async def get_coordinates(city_name: str):
                     if data:
                         return float(data[0]["lon"]), float(data[0]["lat"])
         except Exception as e:
-            logger.error(f"Ошибка геокодирования для {city_name}: {e}")
+            logger.error(f"Ошибка геокодирования: {e}")
     return None, None
 
 async def calculate_driving_hours(route: str) -> float:
-    """
-    Принимает строку вида 'Познань - Берлин',
-    считает время в пути через OSRM и возвращает часы с округлением.
-    """
-    if not route or "-" not in route:
-        return 0.0
-    
+    if not route or "-" not in route: return 0.0
     try:
         parts = route.split("-")
-        origin = parts[0].strip()
-        destination = parts[1].strip()
+        lon1, lat1 = await get_coordinates(parts[0].strip())
+        lon2, lat2 = await get_coordinates(parts[1].strip())
+        if not all([lon1, lat1, lon2, lat2]): return 0.0
         
-        # 1. Получаем координаты точек А и Б
-        lon1, lat1 = await get_coordinates(origin)
-        lon2, lat2 = await get_coordinates(destination)
-        
-        if not all([lon1, lat1, lon2, lat2]):
-            logger.warning(f"Не удалось найти координаты для маршрута: {route}")
-            return 0.0
-            
-        # 2. Стучимся в навигатор OSRM
         osrm_url = f"http://router.project-osrm.org/route/v1/driving/{lon1},{lat1};{lon2},{lat2}"
-        params = {"overview": "false"}
-        
         async with aiohttp.ClientSession() as session:
-            async with session.get(osrm_url, params=params) as response:
+            async with session.get(osrm_url) as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("code") == "Ok":
-                        duration_seconds = data["routes"][0]["duration"]
-                        duration_hours = duration_seconds / 3600
-                        
-                        # 3. ОКРУГЛЕНИЕ: до ближайших 0.5 часа (30 минут)
-                        # Если нужно до десятых, используй: round(duration_hours, 1)
-                        rounded_hours = round(duration_hours * 2) / 2
-                        
-                        return rounded_hours
+                        return round((data["routes"][0]["duration"] / 3600) * 2) / 2
     except Exception as e:
-        logger.error(f"Ошибка OSRM навигации: {e}")
-        
+        logger.error(f"Ошибка навигации: {e}")
     return 0.0
+
+async def get_country_by_city(city_name: str) -> str:
+    clean_city = city_name.split('/')[-1].strip() if '/' in city_name else city_name.strip()
+    if not clean_city: return "PL"
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {"q": clean_city, "format": "json", "addressdetails": 1, "limit": 1}
+    headers = {"User-Agent": "eKsiegowaBot_Alex_Pro/1.0"}
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data: return data[0].get("address", {}).get("country_code", "").upper()
+    except Exception as e:
+        logger.error(f"Ошибка Гео-API: {e}")
+    return "PL"

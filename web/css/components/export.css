@@ -1,0 +1,40 @@
+/* --- СТИЛИ ДЛЯ ВКЛАДКИ: ЭКСПОРТ EXCEL --- */
+
+/* Коробка для месяца экспорта */
+.export-box {
+    background: rgba(85, 239, 196, 0.15);
+    /* Легкий мятно-зеленый оттенок */
+    border: 1px dashed var(--hint-ink);
+    border-radius: 12px;
+    padding: 5px 10px;
+    margin-bottom: 20px;
+}
+
+.export-box .form-group {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Кнопка в стиле Excel */
+.btn-export {
+    background-color: #55efc4;
+    /* Яркий мятный цвет */
+    color: var(--ink-color);
+    border: 2px solid var(--ink-color);
+    border-radius: 20px 10px 15px 25px / 15px 20px 10px 15px;
+    /* Уникальная крафтовая кривизна */
+    width: 100%;
+    padding: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Neucha', cursive;
+    cursor: pointer;
+    box-shadow: 3px 4px 0px rgba(44, 62, 80, 0.2);
+    transition: all 0.1s;
+    margin-top: 5px;
+}
+
+.btn-export:active {
+    transform: translate(3px, 4px);
+    box-shadow: none;
+}

@@ -5,7 +5,10 @@ import asyncio
 from datetime import datetime, timedelta
 from aiogram import Router, types, F
 from aiogram.filters import Command
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton, MenuButtonWebApp, ReplyKeyboardRemove
+from aiogram.types import (
+    ReplyKeyboardMarkup, KeyboardButton, WebAppInfo, 
+    InlineKeyboardMarkup, InlineKeyboardButton, MenuButtonWebApp
+)
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
@@ -13,26 +16,27 @@ from texts import TRANSLATIONS
 from keyboards import get_support_keyboard 
 from nbp_service import get_eur_rate
 from database import (
-    get_user_profile, get_work_log_id, 
+    get_user_profile, 
     upsert_work_log, update_user_setting,
     get_monthly_net_sum, increment_report_count, get_user_subscription_status,
     activate_user_premium, update_user_language,
     increment_shift_count, delete_work_log, get_work_logs_for_month,
-    add_user_savings, get_analytics_by_location
+    add_user_savings, get_analytics_by_location,
+    get_user_unique_records 
 )
+from map_service import calculate_driving_hours, get_country_by_city
+
+# ВОТ ЭТА СТРОКА УБЕРЕТ ЖЕЛТОЕ ПОДЧЕРКИВАНИЕ:
 from handlers.reports import generate_excel_report
-from map_service import calculate_driving_hours
 
 router = Router()
 logger = logging.getLogger(__name__)
 
 WEB_APP_URL = "https://e-ksiegowa.vercel.app/"
 
-# --- СОСТОЯНИЯ ДЛЯ РУЧНОГО ВВОДА СУММЫ В КОПИЛКУ ---
 class SavingsState(StatesGroup):
     waiting_for_amount = State()
 
-# --- ЛОГИКА ПРОГНОЗИСТА ---
 async def calculate_forecast(user_id, profile=None):
     if not profile: 
         profile = await get_user_profile(user_id)
@@ -66,7 +70,6 @@ async def calculate_forecast(user_id, profile=None):
     except Exception:
         return f"Осталось собрать: {remaining_money:.2f} zł."
 
-# --- ГЕНЕРАЦИЯ ССЫЛКИ С ДАННЫМИ ---
 async def build_app_url(user_id, profile=None):
     if not profile:
         profile = await get_user_profile(user_id)
@@ -84,14 +87,14 @@ async def build_app_url(user_id, profile=None):
     goal_name = urllib.parse.quote(raw_goal)
     
     goal_target = profile.get("goal_target", 8000.0)
-    
-    # НОВОЕ: Данные копилки
     current_savings = profile.get("current_savings", 0.0)
     goal_deadline = profile.get("goal_deadline", "")
     
-    # Версия v=11
-    return f"{WEB_APP_URL}?v=11&base={base:g}&extra={extra:g}&eur={eur:g}&drive={drive:g}&drive_eur={drive_eur:g}&car={default_car}&g_name={goal_name}&g_target={goal_target:g}&c_net={current_net:.1f}&c_sav={current_savings:g}&g_dead={goal_deadline}&lang={user_lang}"
-
+    history = await get_user_unique_records(user_id)
+    cars_str = urllib.parse.quote(",".join(history.get("cars", [])))
+    locs_str = urllib.parse.quote(",".join(history.get("locations", [])))
+    
+    return f"{WEB_APP_URL}?v=12&base={base:g}&extra={extra:g}&eur={eur:g}&drive={drive:g}&drive_eur={drive_eur:g}&car={default_car}&g_name={goal_name}&g_target={goal_target:g}&c_net={current_net:.1f}&c_sav={current_savings:g}&g_dead={goal_deadline}&lang={user_lang}&cars={cars_str}&locs={locs_str}"
 
 @router.message(Command("app"))
 async def summon_web_app(message: types.Message):
@@ -113,9 +116,13 @@ async def summon_web_app(message: types.Message):
     )
     await message.answer(t["menu_msg"], reply_markup=markup)
 
-
 @router.message(F.web_app_data)
 async def web_app_handler(message: types.Message):
+    try:
+        await message.delete()
+    except Exception:
+        pass
+        
     raw_data = message.web_app_data.data
     try:
         data = json.loads(raw_data)
@@ -126,10 +133,47 @@ async def web_app_handler(message: types.Message):
 
         if data.get("action") == "add_shift":
             status_msg = await message.answer(t["saving"])
+            
             start_date = datetime.strptime(data.get("date"), "%Y-%m-%d")
             end_date_str = data.get("end_date")
             status = data.get("status", "Work")
             location = data.get("object") or data.get("location") or ""
+            car = data.get("car", "") 
+            
+            country_code = "PL"
+            country_flag = "🇵🇱"
+            
+            if location:
+                country_code = await get_country_by_city(location)
+                if len(country_code) == 2:
+                    country_flag = chr(ord(country_code[0]) + 127397) + chr(ord(country_code[1]) + 127397)
+                else:
+                    country_flag = "🌍"
+            
+            is_abroad_actual = data.get("is_abroad") or (country_code != "PL")
+            history = await get_user_unique_records(user_id)
+            
+            if location and location not in history.get("locations", []):
+                from aiogram.types import FSInputFile
+                try:
+                    await message.answer_photo(
+                        photo=FSInputFile("assets/kasia_new_object.png"),
+                        caption=f"📂 Ого! У нас новый объект: **{location} {country_flag}**!\nЗавожу под него папку.",
+                        parse_mode="Markdown"
+                    )
+                except Exception as e:
+                    logger.error(f"Не удалось отправить фото нового объекта: {e}")
+
+            if car and car not in history.get("cars", []):
+                from aiogram.types import FSInputFile
+                try:
+                    await message.answer_photo(
+                        photo=FSInputFile("assets/kasia_garage_add.png"),
+                        caption=f"🚙 Загоняю **{car}** в наш Виртуальный Гараж! Мотор шепчет, к поездкам готова.",
+                        parse_mode="Markdown"
+                    )
+                except Exception as e:
+                    logger.error(f"Не удалось отправить фото гаража: {e}")
             
             dates_to_process = [start_date]
             if status in ["L4", "Urlop"] and end_date_str:
@@ -157,13 +201,13 @@ async def web_app_handler(message: types.Message):
 
             total_net, total_gross, total_loss, total_cash_diff = 0, 0, 0, 0
             ai_advice = ""
-            applied_nbp_rate = await get_eur_rate(data.get("date")) if data.get("is_abroad") else None
-
+            
+            applied_nbp_rate = await get_eur_rate(data.get("date")) if is_abroad_actual else None
             is_trip_int = 1 if data.get("is_trip") else 0
             eff_rate = profile.get("extra_rate", 0)
             eff_drive = profile.get("rate_drive", 20.0)
             
-            if data.get("is_abroad") and applied_nbp_rate:
+            if is_abroad_actual and applied_nbp_rate:
                 if profile.get("rate_eur", 0) > 0:
                     eff_rate = profile["rate_eur"] * applied_nbp_rate
                 if profile.get("rate_drive_eur", 0) > 0:
@@ -225,8 +269,6 @@ async def web_app_handler(message: types.Message):
                 total_net += net
                 total_gross += gross
                 total_cash_diff += cash_part
-
-            await status_msg.delete()
             
             status_labels = {
                 "Work": {"PL": "💼 Praca", "UKR": "💼 Робота", "RUS": "💼 Работа"},
@@ -253,7 +295,7 @@ async def web_app_handler(message: types.Message):
             final_text = (
                 f"✅ <b>Запись сохранена:</b> {start_date.strftime('%d.%m.%Y')} ({day_name})\n"
                 f"Статус: {status_icon}\n"
-                f"📍 Объект: {location}\n\n"
+                f"📍 Объект: {location} {country_flag}\n\n"
                 f"💰 <b>НА РУКИ: {total_net:.2f} zł</b>\n"
                 f"➖ ➖ ➖ ➖ ➖\n"
                 f"🕒 Работа: {work_hours} ч. | 🚗 За рулем: {driving_hours} ч.\n"
@@ -265,8 +307,21 @@ async def web_app_handler(message: types.Message):
                 f"{coffee_msg}" 
             )
             
-            markup = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))]], resize_keyboard=True)
-            await message.bot.set_chat_menu_button(chat_id=user_id, menu_button=MenuButtonWebApp(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url)))
+            await message.bot.set_chat_menu_button(
+                chat_id=user_id,
+                menu_button=MenuButtonWebApp(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))
+            )
+            
+            markup = ReplyKeyboardMarkup(
+                keyboard=[[KeyboardButton(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))]],
+                resize_keyboard=True
+            )
+            
+            try:
+                await status_msg.delete()
+            except Exception:
+                pass
+                
             await message.answer(final_text, reply_markup=markup, parse_mode="HTML")
 
         elif data.get("action") == "update_settings":
@@ -278,26 +333,30 @@ async def web_app_handler(message: types.Message):
                         if clean_val: await update_user_setting(user_id, field, float(clean_val))
                     except ValueError: pass
             if "goal_name" in data: await update_user_setting(user_id, "goal_name", str(data["goal_name"]))
-            # СОХРАНЯЕМ ДЕДЛАЙН
             if "goal_deadline" in data: await update_user_setting(user_id, "goal_deadline", str(data["goal_deadline"]))
             if data.get("lang"): await update_user_language(user_id, str(data["lang"]))
             
             dyn_url = await build_app_url(user_id)
-            markup = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))]], resize_keyboard=True)
             await message.bot.set_chat_menu_button(chat_id=user_id, menu_button=MenuButtonWebApp(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url)))
+            
+            markup = ReplyKeyboardMarkup(
+                keyboard=[[KeyboardButton(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))]],
+                resize_keyboard=True
+            )
             await message.answer(t["set_ok"], parse_mode="HTML", reply_markup=markup)
 
         elif data.get("action") == "get_report":
             target_month = data.get("month") or datetime.now().strftime("%m.%Y")
             status_msg = await message.answer(t["report_wait"].format(month=target_month))
             await generate_excel_report(callback=None, target_user_id=user_id, target_month=target_month, bot=message.bot)
-            await status_msg.delete()
+            try:
+                await status_msg.delete()
+            except Exception: pass
             await increment_report_count(user_id)
             reports_count, is_premium = await get_user_subscription_status(user_id)
             if not is_premium and reports_count > 0 and reports_count % 5 == 0:
                 await message.answer(t["freemium"].format(count=reports_count), parse_mode="Markdown", reply_markup=get_support_keyboard(user_lang))
 
-        # --- ОБНОВЛЕННЫЙ АУДИТ С ПРЕДЛОЖЕНИЕМ КОПИЛКИ ---
         elif data.get("action") == "audit":
             target_month = data.get("month")
             card_amount = float(data.get("card", 0))
@@ -326,11 +385,9 @@ async def web_app_handler(message: types.Message):
                 await message.answer(t["hist_err"].format(month=target_month))
                 return
             
-            # --- ПОДГОТОВКА ДАННЫХ ДЛЯ ГРАФИКА ---
-            labels = [row[0] for row in analytics_data] # Названия объектов
-            values = [row[3] for row in analytics_data] # Суммы Netto
+            labels = [row[0] for row in analytics_data]
+            values = [row[3] for row in analytics_data]
             
-            # Формируем конфиг для QuickChart (JSON)
             chart_config = {
                 "type": "pie",
                 "data": {
@@ -346,11 +403,9 @@ async def web_app_handler(message: types.Message):
                 }
             }
             
-            # Кодируем ссылку
             encoded_config = urllib.parse.quote(json.dumps(chart_config))
             chart_url = f"https://quickchart.io/chart?c={encoded_config}&width=500&height=300&bkg=white"
 
-            # --- ФОРМИРУЕМ ТЕКСТОВЫЙ ТОП ---
             msg_text = f"📊 **Аналитика по объектам за {target_month}**\n\n"
             medals = ["🥇", "🥈", "🥉"]
             for i, row in enumerate(analytics_data):
@@ -358,7 +413,6 @@ async def web_app_handler(message: types.Message):
                 medal = medals[i] if i < 3 else "🔸"
                 msg_text += f"{medal} **{loc}**: {t_net:.2f} zł\n"
 
-            # Отправляем фото с графиком и описанием
             await message.answer_photo(
                 photo=chart_url,
                 caption=msg_text,
@@ -386,7 +440,6 @@ async def web_app_handler(message: types.Message):
         t = TRANSLATIONS.get("RUS", TRANSLATIONS["RUS"])
         await message.answer(t["err"])
 
-# --- ОБРАБОТЧИКИ КНОПОК КОПИЛКИ ---
 @router.callback_query(F.data.startswith("add_savings_"))
 async def add_savings_fast(callback: types.CallbackQuery):
     amount = float(callback.data.split("_")[-1])

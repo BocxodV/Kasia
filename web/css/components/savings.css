@@ -1,0 +1,59 @@
+/* --- СТИЛИ ДЛЯ ВКЛАДКИ: КОПИЛКА --- */
+
+.savings-box {
+    background: rgba(253, 203, 110, 0.15);
+    /* Теплый, солнечный фон */
+    border: 1px dashed var(--hint-ink);
+    border-radius: 12px;
+    padding: 20px 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.goal-title {
+    font-size: 26px;
+    color: var(--ink-color);
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-family: 'Neucha', cursive;
+}
+
+/* Обертка для нарисованного прогресс-бара */
+.progress-wrapper {
+    background: #ffffff;
+    border-radius: 15px 25px 20px 10px / 20px 15px 25px 15px;
+    /* Скетч-контур */
+    height: 30px;
+    width: 100%;
+    overflow: hidden;
+    border: 2px solid var(--ink-color);
+    margin-bottom: 15px;
+    box-shadow: inset 2px 3px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Сама заполняющаяся линия */
+.progress-bar {
+    background-color: var(--highlight-yellow);
+    /* Наш фирменный текстовыделитель */
+    height: 100%;
+    width: 0%;
+    /* Стартуем с нуля, ширину задаст JS */
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Плавная анимация заливки */
+    border-right: 2px solid var(--ink-color);
+}
+
+.goal-numbers {
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Neucha', cursive;
+    margin-bottom: 8px;
+    color: #2d3436;
+}
+
+.motivation-text {
+    font-size: 16px;
+    color: var(--hint-color);
+    font-style: italic;
+    line-height: 1.3;
+}

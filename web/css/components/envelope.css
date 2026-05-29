@@ -1,0 +1,45 @@
+/* --- СТИЛИ ДЛЯ ВКЛАДКИ: КОНВЕРТ / АУДИТ --- */
+
+/* Коробка для ввода данных зарплаты */
+.audit-box {
+    background: rgba(253, 203, 110, 0.15);
+    /* Легкий золотисто-бумажный оттенок */
+    border: 1px dashed var(--hint-ink);
+    border-radius: 12px;
+    padding: 5px 10px;
+    margin-bottom: 20px;
+}
+
+.audit-box .form-group {
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+    margin-bottom: 5px;
+}
+
+.audit-box .form-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Спец-кнопка для конверта в крафтовом стиле */
+.btn-audit {
+    background-color: #ffeaa7;
+    /* Светло-желтый цвет конверта */
+    color: var(--ink-color);
+    border: 2px solid var(--ink-color);
+    border-radius: 15px 25px 12px 20px / 25px 15px 20px 10px;
+    /* Фирменная кривизна скетча */
+    width: 100%;
+    padding: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Neucha', cursive;
+    cursor: pointer;
+    box-shadow: 3px 4px 0px rgba(44, 62, 80, 0.2);
+    transition: all 0.1s;
+    margin-top: 5px;
+}
+
+.btn-audit:active {
+    transform: translate(3px, 4px);
+    box-shadow: none;
+}

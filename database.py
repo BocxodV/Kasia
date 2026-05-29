@@ -41,6 +41,7 @@ async def init_db():
         ''')
         # Безопасное обновление старых таблиц
         for column in [
+            "language TEXT DEFAULT 'PL'",
             "last_location TEXT", 
             "last_country TEXT", 
             "rate_eur REAL DEFAULT 0.0", 
@@ -230,3 +231,33 @@ async def get_analytics_by_location(user_id, month_year):
             ORDER BY total_net DESC
         ''', (user_id, month_year)) as cursor:
             return await cursor.fetchall()
+        
+async def get_user_unique_records(user_id: int):
+    """
+    Извлекает последние уникальные записи (авто и локации) для клавиатуры-подсказки.
+    Сортировка по MAX(id) DESC гарантирует, что недавно использованные варианты будут первыми.
+    """
+    async with aiosqlite.connect(DB_NAME) as db:
+        # 1. Последние 5 уникальных авто
+        async with db.execute('''
+            SELECT car 
+            FROM work_logs 
+            WHERE user_id = ? AND car IS NOT NULL AND car != '' 
+            GROUP BY car 
+            ORDER BY MAX(id) DESC 
+            LIMIT 5
+        ''', (user_id,)) as cursor:
+            cars = [row[0] for row in await cursor.fetchall()]
+
+        # 2. Последние 10 уникальных локаций (городов/объектов)
+        async with db.execute('''
+            SELECT location 
+            FROM work_logs 
+            WHERE user_id = ? AND location IS NOT NULL AND location != '' 
+            GROUP BY location 
+            ORDER BY MAX(id) DESC 
+            LIMIT 10
+        ''', (user_id,)) as cursor:
+            locations = [row[0] for row in await cursor.fetchall()]
+
+    return {"cars": cars, "locations": locations}

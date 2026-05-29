@@ -1,0 +1,40 @@
+/* --- СТИЛИ ДЛЯ ВКЛАДКИ: АНАЛИТИКА --- */
+
+/* Коробка для месяца аналитики */
+.analytics-box {
+    background: rgba(162, 155, 254, 0.15);
+    /* Легкий фиолетовый оттенок */
+    border: 1px dashed var(--hint-ink);
+    border-radius: 12px;
+    padding: 5px 10px;
+    margin-bottom: 20px;
+}
+
+.analytics-box .form-group {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Кнопка в стиле графиков */
+.btn-analytics {
+    background-color: #a29bfe;
+    /* Приятный мягко-фиолетовый цвет */
+    color: var(--ink-color);
+    border: 2px solid var(--ink-color);
+    border-radius: 15px 20px 25px 10px / 25px 15px 10px 20px;
+    /* Крафтовая кривизна */
+    width: 100%;
+    padding: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Neucha', cursive;
+    cursor: pointer;
+    box-shadow: 3px 4px 0px rgba(44, 62, 80, 0.2);
+    transition: all 0.1s;
+    margin-top: 5px;
+}
+
+.btn-analytics:active {
+    transform: translate(3px, 4px);
+    box-shadow: none;
+}

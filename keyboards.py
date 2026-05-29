@@ -1,5 +1,6 @@
 # keyboards.py
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.utils.keyboard import ReplyKeyboardBuilder # <--- НОВЫЙ ИМПОРТ ДЛЯ БИЛДЕРА
 from texts import TRANSLATIONS
 
 def get_main_keyboard(lang, dynamic_url=None):
@@ -31,3 +32,23 @@ def get_support_keyboard(lang):
         [InlineKeyboardButton(text=t["btn_pro"], callback_data="activate_premium")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+# --- НОВАЯ ФУНКЦИЯ ДЛЯ СПРИНТА 2 (ДИНАМИЧЕСКИЕ КНОПКИ) ---
+def get_dynamic_reply_kb(items: list, row_width: int = 2) -> ReplyKeyboardMarkup:
+    """
+    Универсальный генератор динамической Reply-клавиатуры.
+    Принимает список строк (история локаций или авто) и выстраивает их в кнопки.
+    """
+    builder = ReplyKeyboardBuilder()
+    
+    # Перебираем наш список (например, 5 последних городов)
+    for item in items:
+        builder.add(KeyboardButton(text=str(item)))
+        
+    # Упаковываем кнопки по рядам (например, по 2 в ряд)
+    builder.adjust(row_width)
+    
+    # Возвращаем готовую клавиатуру:
+    # resize_keyboard=True делает их маленькими и аккуратными
+    # one_time_keyboard=True автоматически скрывает их после нажатия
+    return builder.as_markup(resize_keyboard=True, one_time_keyboard=True)

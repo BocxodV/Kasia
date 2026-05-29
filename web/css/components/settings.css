@@ -1,0 +1,61 @@
+/* /web/css/components/settings.css */
+
+.settings-section {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px dashed var(--hint-ink);
+    border-radius: 12px;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+}
+
+.settings-section h3 {
+    font-size: 18px;
+    color: var(--ink-color);
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 5px;
+    font-family: 'Neucha', cursive;
+}
+
+.settings-section .form-group {
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+    padding: 8px 0;
+}
+
+.settings-section .form-group:last-child {
+    border-bottom: none;
+}
+
+.settings-actions {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+/* --- Стили, перенесенные из инлайнов HTML --- */
+
+#langInput {
+    border: none;
+    background: transparent;
+    font-family: 'Neucha', cursive;
+    font-size: 19px;
+    color: var(--ink-color);
+    text-align: right;
+    outline: none;
+    cursor: pointer;
+    direction: rtl;
+}
+
+#langInput option {
+    background-color: #fff;
+    color: #000;
+    direction: ltr;
+}
+
+#btn_save_settings {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+#settings .input-row label {
+    white-space: nowrap;
+}
