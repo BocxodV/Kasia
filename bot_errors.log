@@ -78,3 +78,19 @@
 2026-05-29 17:31:33,547 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
 2026-05-29 17:31:33,548 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 7662501089)
 2026-05-29 17:31:33,802 - aiogram.dispatcher - INFO - Polling stopped for bot @e_ksiegowa_bot id=7662501089 - '@e_k_bot_test'
+2026-05-30 00:19:58,998 - apscheduler.scheduler - INFO - Scheduler started
+2026-05-30 00:19:59,000 - __main__ - INFO - Бот запущен в штатном режиме.
+2026-05-30 00:19:59,190 - aiogram.dispatcher - INFO - Start polling
+2026-05-30 00:19:59,237 - aiogram.dispatcher - INFO - Run polling for bot @e_ksiegowa_bot id=7662501089 - '@e_k_bot_test'
+2026-05-30 00:21:08,458 - aiogram.dispatcher - INFO - Polling stopped
+2026-05-30 00:21:08,459 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-05-30 00:21:08,459 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 7662501089)
+2026-05-30 00:21:08,712 - aiogram.dispatcher - INFO - Polling stopped for bot @e_ksiegowa_bot id=7662501089 - '@e_k_bot_test'
+2026-05-30 00:28:47,746 - apscheduler.scheduler - INFO - Scheduler started
+2026-05-30 00:28:47,747 - __main__ - INFO - Бот запущен в штатном режиме.
+2026-05-30 00:28:47,909 - aiogram.dispatcher - INFO - Start polling
+2026-05-30 00:28:47,947 - aiogram.dispatcher - INFO - Run polling for bot @e_ksiegowa_bot id=7662501089 - '@e_k_bot_test'
+2026-05-30 00:45:26,290 - aiogram.dispatcher - INFO - Polling stopped
+2026-05-30 00:45:26,291 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-05-30 00:45:26,291 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 7662501089)
+2026-05-30 00:45:26,548 - aiogram.dispatcher - INFO - Polling stopped for bot @e_ksiegowa_bot id=7662501089 - '@e_k_bot_test'
