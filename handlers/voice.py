@@ -81,7 +81,7 @@ async def handle_voice_shift(message: types.Message):
         # --- ШАГ 1: ПЕРВЫЙ ЗАПРОС К ИИ ---
         contents = [prompt_text, audio_part]
         response = await client.aio.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.5-flash',
             contents=contents,
             config=config
         )
@@ -114,7 +114,7 @@ async def handle_voice_shift(message: types.Message):
                     await status_msg.edit_text("🧠 Формирую финальный отчет...")
                     # Просим ИИ продолжить работу, имея на руках курс евро
                     response = await client.aio.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-3.5-flash',
                         contents=contents,
                         config=config
                     )

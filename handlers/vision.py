@@ -10,74 +10,55 @@ from database import update_user_setting
 router = Router()
 logger = logging.getLogger(__name__)
 
-# Инициализация нового клиента
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+# 1. ВЫДЕЛЯЕМ ИИ В ОТДЕЛЬНУЮ ФУНКЦИЮ (для Web App)
+async def process_image_bytes(image_bytes: bytes) -> dict:
+    prompt = """
+    Ты - умный парсер автомобильных данных. Посмотри на это фото.
+    Определи марку и модель автомобиля. Если видно номерной знак, прочитай его.
+    Верни ТОЛЬКО валидный JSON.
+    Формат: {"car": "Марка и Модель", "plate": "НОМЕР"}
+    Если чего-то нет на фото, оставь значение пустым.
+    """
+    response = await client.aio.models.generate_content(
+        model='gemini-3.5-flash',
+        contents=[
+            prompt,
+            genai_types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg')
+        ],
+        config=genai_types.GenerateContentConfig(
+            response_mime_type="application/json",
+            temperature=0.1
+        )
+    )
+    return json.loads(response.text)
+
+# 2. Оставляем классический обработчик для чата (на всякий случай)
 @router.message(F.photo)
 async def handle_car_photo(message: types.Message):
     status_msg = await message.answer("👁 Изучаю фото...")
-    
     try:
-        # 1. Скачиваем фото прямо в ОПЕРАТИВНУЮ ПАМЯТЬ (без сохранения на диск)
         photo = message.photo[-1]
         file_info = await message.bot.get_file(photo.file_id)
         downloaded_file = await message.bot.download_file(file_info.file_path)
-        image_bytes = downloaded_file.read() # Читаем байты
         
-        prompt = """
-        Ты - умный парсер автомобильных данных. Посмотри на это фото.
-        Определи марку и модель автомобиля. Если видно номерной знак, прочитай его.
-        Верни ТОЛЬКО валидный JSON.
-        Формат: {"car": "Марка и Модель", "plate": "НОМЕР"}
-        Если чего-то нет на фото, оставь значение пустым.
-        """
+        data = await process_image_bytes(downloaded_file.read())
         
-        # 2. Асинхронно отправляем байты в Gemini 3.5 Flash
-        response = await client.aio.models.generate_content(
-            model='gemini-3.5-flash',
-            contents=[
-                prompt,
-                genai_types.Part.from_bytes(
-                    data=image_bytes,
-                    mime_type='image/jpeg'
-                )
-            ],
-            # SENIOR-ФИШКА: Жестко требуем JSON от API
-            config=genai_types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.1 # Низкая температура для максимальной точности фактов
-            )
-        )
-        
-        # 3. Обрабатываем гарантированно чистый JSON
-        data = json.loads(response.text)
-        
-        car = data.get("car", "").strip()
-        plate = data.get("plate", "").strip()
+        car, plate = data.get("car", "").strip(), data.get("plate", "").strip()
         
         if not car and not plate:
             await status_msg.edit_text("🤷‍♂️ Не смог распознать машину или номер. Попробуй другой ракурс!")
             return
             
-        # 4. Формируем красивую строку
         final_car_string = f"{car} {plate}".strip()
-            
-        # 5. Сохраняем в базу (машина запишется, чтобы попасть в будущие выпадающие списки)
         await update_user_setting(message.from_user.id, "default_car", final_car_string)
 
         await status_msg.delete()
-        
-        # НОВЫЙ ЧИСТЫЙ ТЕКСТ БЕЗ КНОПОК
-        final_text = (
-            f"🚗 **Машина успешно распознана!**\n\n"
-            f"**Авто:** {car}\n"
-            f"**Номер:** {plate}\n\n"
-            f"✅ Отличный аппарат! Введи его один раз при заполнении следующей смены, и он навсегда сохранится в твоем выпадающем списке гаража."
+        await message.answer(
+            f"🚗 **Машина успешно распознана!**\n\n**Авто:** {car}\n**Номер:** {plate}\n\n✅ Сохранено в Гараж.", 
+            parse_mode="Markdown"
         )
-        
-        await message.answer(final_text, parse_mode="Markdown")
-        
     except Exception as e:
-        logger.error(f"Vision Error: {e}", exc_info=True)
-        # Бот выведет конкретную ошибку прямо в чат
+        logger.error(f"Vision Error: {e}")
         await status_msg.edit_text(f"⚠️ Ошибка при анализе фото: {str(e)}")

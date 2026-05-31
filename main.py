@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import traceback
 from datetime import datetime, timedelta
 
 from aiogram import Bot, Dispatcher, types, F
@@ -27,14 +28,16 @@ logger = logging.getLogger(__name__)
 from texts import TRANSLATIONS
 from keyboards import get_main_keyboard
 
-# Импорт асинхронных функций БД
+# Импорт асинхронных функций БД (ИСПОЛНЕНО: добавлено update_user_setting)
 from database import (
     init_db, get_user_profile, update_user_language, 
-    update_last_location, get_users_for_audit, get_all_users
+    update_last_location, get_users_for_audit, get_all_users, update_user_setting
 )
 
 from handlers import reports, webapp, vision, voice, admin
-from handlers.webapp import build_app_url # Подтягиваем генератор
+from handlers.webapp import build_app_url
+from handlers.vision import process_image_bytes # Подтягиваем ИИ-парсер
+
 from config import BOT_TOKEN
 
 bot = Bot(token=BOT_TOKEN)
@@ -42,7 +45,6 @@ dp = Dispatcher()
 
 # === НАСТРОЙКИ WEBHOOK ===
 WEBHOOK_PATH = "/webhook"
-# Автоматически убираем лишний слеш на конце, если он есть, чтобы склейка была правильной
 webhook_base = os.getenv("WEBHOOK_URL", "").rstrip("/")
 WEBHOOK_URL = f"{webhook_base}{WEBHOOK_PATH}" if webhook_base else ""
 
@@ -105,7 +107,6 @@ async def handle_start(message: types.Message):
         reply_markup=markup
     )
 
-# Игнорируем технические статусы, чтобы не засорять логи (Update not handled)
 @dp.my_chat_member()
 async def silent_chat_member_update(update: types.ChatMemberUpdated):
     pass
@@ -119,12 +120,10 @@ dp.include_router(voice.router)
 dp.include_router(webapp.router) 
 
 
-# === 3. ЖИЗНЕННЫЙ ЦИКЛ ПРИЛОЖЕНИЯ (STARTUP / SHUTDOWN) ===
+# === 3. ЖИЗНЕННЫЙ ЦИКЛ ПРИЛОЖЕНИЯ И API-ШЛЮЗ ===
 
 async def on_startup(bot: Bot):
-    """Функция выполняется при запуске веб-сервера."""
     logger.info("⏳ [ШАГ 1] Запуск on_startup. Подключаемся к базе...")
-    
     try:
         await init_db() 
         logger.info("✅ [ШАГ 2] База данных успешно подключена!")
@@ -139,7 +138,6 @@ async def on_startup(bot: Bot):
     if WEBHOOK_URL:
         logger.info(f"⏳ [ШАГ 5] Отправляем запрос в Telegram: {WEBHOOK_URL}")
         try:
-            # Установим webhook, используя уже склеенную ссылку без лишних слешей
             await bot.set_webhook(WEBHOOK_URL)
             logger.info("✅ [ШАГ 6] Webhook успешно привязан!")
         except Exception as e:
@@ -148,33 +146,62 @@ async def on_startup(bot: Bot):
         logger.warning("⚠️ WEBHOOK_URL не задан! Бот не будет получать сообщения.")
 
 async def on_shutdown(bot: Bot):
-    """Функция выполняется при выключении веб-сервера."""
-    # Мы специально НЕ удаляем вебхук, чтобы Telegram продолжал будить Cloud Run
     logger.info("💤 Cloud Run уходит в спящий режим. Webhook активен, ждем сообщений...")
-    
+
+# === НАШ НОВЫЙ МОСТ ДЛЯ ФРОНТЕНДА (API-ШЛЮЗ) ===
+async def api_scan_car(request):
+    # Разрешаем браузеру Vercel общаться с Cloud Run
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+    }
+    if request.method == 'OPTIONS':
+        return web.Response(headers=headers)
+
+    try:
+        data = await request.post()
+        photo = data.get('photo')
+        user_id = data.get('user_id')
+
+        if not photo:
+            return web.json_response({"error": "No photo"}, status=400, headers=headers)
+        
+        # Передаем байты в Gemini
+        result = await process_image_bytes(photo.file.read())
+        
+        # Сохраняем тачку в базу по user_id
+        car_str, plate_str = result.get("car", "").strip(), result.get("plate", "").strip()
+        if user_id and str(user_id) != "unknown" and (car_str or plate_str):
+            final_car_string = f"{car_str} {plate_str}".strip()
+            await update_user_setting(int(user_id), "default_car", final_car_string)
+
+        return web.json_response(result, headers=headers)
+        
+    except Exception as e:
+        logger.error(f"API Scan Error: {e}\n{traceback.format_exc()}")
+        return web.json_response({"error": str(e)}, status=500, headers=headers)
+
+
 def main():
-    # 1. Регистрируем события старта и остановки
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
 
-    # 2. Создаем веб-сервер aiohttp
     app = web.Application()
 
-    # 3. Настраиваем обработчик запросов от Telegram
+    # Регистрация маршрута для сканера Гаража
+    app.router.add_route('OPTIONS', '/api/scan-car', api_scan_car)
+    app.router.add_post('/api/scan-car', api_scan_car)
+
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
     )
-    # Слушаем запросы по пути /webhook
     webhook_requests_handler.register(app, path=WEBHOOK_PATH)
 
-    # 4. Привязываем наше приложение к диспетчеру
     setup_application(app, dp, bot=bot)
 
-    # 5. Получаем порт от Google Cloud (по умолчанию 8080)
     port = int(os.getenv("PORT", 8080))
-
-    # 6. Запускаем сервер
     logger.info(f"🚀 Запускаем веб-сервер на порту {port}...")
     web.run_app(app, host="0.0.0.0", port=port)
 

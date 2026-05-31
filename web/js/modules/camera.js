@@ -57,8 +57,9 @@ export async function triggerCarScan() {
             formData.append("user_id", tg.initDataUnsafe?.user?.id || "unknown");
 
             try {
-                // Имитация отправки (пока мы не сделали бэкенд на Cloud Run)
-                const response = await fetch("/api/scan-car", { method: "POST", body: formData });
+                // Прямой вызов нашего API-шлюза на Cloud Run
+                const backendUrl = "https://e-ksiegowa-254558688282.europe-central2.run.app/api/scan-car";
+                const response = await fetch(backendUrl, { method: "POST", body: formData });
                 
                 if (response.ok) {
                     const result = await response.json();
