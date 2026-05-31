@@ -108,14 +108,13 @@ async def handle_start(message: types.Message):
         reply_markup=markup
     )
 
-# === ЖИЗНЕННЫЙ ЦИКЛ БОТА ===
 async def on_startup(bot: Bot):
     """Функция выполняется при запуске веб-сервера."""
-    logger.info("⏳ [ШАГ 1] Запуск on_startup. Подключаемся к базе Neon...")
+    logger.info("⏳ [ШАГ 1] Запуск on_startup. Подключаемся к базе...")
     
     try:
         await init_db() 
-        logger.info("✅ [ШАГ 2] База данных успешно подключена и инициализирована!")
+        logger.info("✅ [ШАГ 2] База данных успешно подключена!")
     except Exception as e:
         logger.error(f"❌ Ошибка подключения к БД: {e}")
     
@@ -127,18 +126,20 @@ async def on_startup(bot: Bot):
     if WEBHOOK_URL:
         logger.info(f"⏳ [ШАГ 5] Отправляем запрос в Telegram: {WEBHOOK_URL}{WEBHOOK_PATH}")
         try:
-            await bot.set_webhook(f"{WEBHOOK_URL}{WEBHOOK_PATH}", drop_pending_updates=True)
+            # УБРАЛИ drop_pending_updates=True, чтобы не терять сообщения при пробуждении контейнера
+            await bot.set_webhook(f"{WEBHOOK_URL}{WEBHOOK_PATH}")
             logger.info("✅ [ШАГ 6] Webhook успешно привязан!")
         except Exception as e:
             logger.error(f"❌ Ошибка установки Webhook: {e}")
     else:
-        logger.warning("⚠️ WEBHOOK_URL не задан! Бот запущен, но не будет получать сообщения.")
+        logger.warning("⚠️ WEBHOOK_URL не задан!")
 
 async def on_shutdown(bot: Bot):
     """Функция выполняется при выключении веб-сервера."""
-    logger.info("Выключаем бота...")
-    await bot.delete_webhook()
-
+    # УБРАЛИ await bot.delete_webhook()
+    # Теперь Телеграм всегда знает, где искать Касю, даже если сервер спит!
+    logger.info("💤 Cloud Run уходит в спящий режим. Webhook активен, ждем сообщений...")
+    
 def main():
     # 1. Регистрируем события старта и остановки
     dp.startup.register(on_startup)
