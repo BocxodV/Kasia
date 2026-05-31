@@ -5,8 +5,11 @@ from datetime import datetime, timedelta
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart
-from aiogram.types import FSInputFile, MenuButtonWebApp, WebAppInfo, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.fsm.context import FSMContext
+from aiogram.types import (
+    FSInputFile, MenuButtonWebApp, WebAppInfo, 
+    ReplyKeyboardMarkup, KeyboardButton, 
+    InlineKeyboardMarkup, InlineKeyboardButton
+)
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # === НОВЫЕ ИМПОРТЫ ДЛЯ WEBHOOK ===
@@ -31,30 +34,27 @@ from database import (
 )
 
 from handlers import reports, webapp, vision, voice
-from handlers.reports import generate_excel_report
 from handlers.webapp import build_app_url # Подтягиваем наш генератор
 from config import BOT_TOKEN
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# Регистрация всех модулей
-dp.include_router(reports.router)
-dp.include_router(vision.router) 
-dp.include_router(voice.router) 
-dp.include_router(webapp.router) 
-
 # === НАСТРОЙКИ WEBHOOK ===
 WEBHOOK_PATH = "/webhook"
-# Сюда попадет ссылка от Google Cloud Run (настроим на сервере)
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "") 
+# Автоматически убираем лишний слеш на конце, если он есть, чтобы склейка была правильной
+webhook_base = os.getenv("WEBHOOK_URL", "").rstrip("/")
+WEBHOOK_URL = f"{webhook_base}{WEBHOOK_PATH}" if webhook_base else ""
+
+
+# === 1. БАЗОВЫЕ ОБРАБОТЧИКИ (РЕГИСТРИРУЕМ ПЕРВЫМИ!) ===
 
 @dp.message(CommandStart())
 async def handle_start(message: types.Message):
     user_id = message.from_user.id
     profile = await get_user_profile(user_id)
     
-    # Авто-перехват 
+    # Авто-перехват языка
     tg_lang = message.from_user.language_code 
     if tg_lang:
         if tg_lang.startswith('pl'): user_lang = "PL"
@@ -91,22 +91,34 @@ async def handle_start(message: types.Message):
         ]
     )
     
-    # Меняем имя файла на kasia_welcome.png с точным локальным путем
     photo_file = FSInputFile("web/arts/kasia_welcome.png")
     await message.answer_photo(
         photo=photo_file,
         caption="Wybierz język / Выберите язык / Choose language:",
         parse_mode="Markdown",
         reply_markup=lang_kb
-        
     )
     
-    # Отправляем приветствие с Reply-кнопкой WebApp следующим сообщением
     await message.answer(
         text=t["welcome_text"],
         parse_mode="Markdown",
         reply_markup=markup
     )
+
+# Игнорируем технические статусы, чтобы не засорять логи (Update not handled)
+@dp.my_chat_member()
+async def silent_chat_member_update(update: types.ChatMemberUpdated):
+    pass
+
+
+# === 2. ПОДКЛЮЧАЕМ РОУТЕРЫ ИЗ МОДУЛЕЙ ===
+dp.include_router(reports.router)
+dp.include_router(vision.router) 
+dp.include_router(voice.router) 
+dp.include_router(webapp.router) 
+
+
+# === 3. ЖИЗНЕННЫЙ ЦИКЛ ПРИЛОЖЕНИЯ (STARTUP / SHUTDOWN) ===
 
 async def on_startup(bot: Bot):
     """Функция выполняется при запуске веб-сервера."""
@@ -124,20 +136,19 @@ async def on_startup(bot: Bot):
     logger.info("✅ [ШАГ 4] Планировщик запущен!")
     
     if WEBHOOK_URL:
-        logger.info(f"⏳ [ШАГ 5] Отправляем запрос в Telegram: {WEBHOOK_URL}{WEBHOOK_PATH}")
+        logger.info(f"⏳ [ШАГ 5] Отправляем запрос в Telegram: {WEBHOOK_URL}")
         try:
-            # УБРАЛИ drop_pending_updates=True, чтобы не терять сообщения при пробуждении контейнера
-            await bot.set_webhook(f"{WEBHOOK_URL}{WEBHOOK_PATH}")
+            # Установим webhook, используя уже склеенную ссылку без лишних слешей
+            await bot.set_webhook(WEBHOOK_URL)
             logger.info("✅ [ШАГ 6] Webhook успешно привязан!")
         except Exception as e:
             logger.error(f"❌ Ошибка установки Webhook: {e}")
     else:
-        logger.warning("⚠️ WEBHOOK_URL не задан!")
+        logger.warning("⚠️ WEBHOOK_URL не задан! Бот не будет получать сообщения.")
 
 async def on_shutdown(bot: Bot):
     """Функция выполняется при выключении веб-сервера."""
-    # УБРАЛИ await bot.delete_webhook()
-    # Теперь Телеграм всегда знает, где искать Касю, даже если сервер спит!
+    # Мы специально НЕ удаляем вебхук, чтобы Telegram продолжал будить Cloud Run
     logger.info("💤 Cloud Run уходит в спящий режим. Webhook активен, ждем сообщений...")
     
 def main():
