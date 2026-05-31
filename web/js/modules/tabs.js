@@ -58,36 +58,13 @@ export function openTab(tabId) {
     if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
-// --- ЛОГИКА СВАЙПОВ ПО СТРАНИЦЕ ---
-let touchStartX = 0;
-let touchEndX = 0;
-
+// --- ЛОГИКА СВАЙПОВ ОТКЛЮЧЕНА ---
 export function setupSwipes() {
-    const plannerPage = document.querySelector('.planner-page');
-    if (!plannerPage) return;
-
-    plannerPage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-    plannerPage.addEventListener('touchend', e => { 
-        touchEndX = e.changedTouches[0].screenX; 
-        handleSwipe(); 
-    });
-
-    // Добавляем проверку статуса, чтобы менять полароид при выборе Отпуска
+    // Оставляем только проверку статуса для полароида, сами свайпы убраны по запросу.
     const statusInput = document.getElementById("statusInput");
     if (statusInput) {
         statusInput.addEventListener("change", function () {
             updatePolaroid('shift');
         });
     }
-}
-
-function handleSwipe() {
-    let swipeDistance = touchEndX - touchStartX;
-    let threshold = 60; 
-    let activeTabElement = document.querySelector('.content.active');
-    if (!activeTabElement) return;
-    
-    let currentIndex = tabsOrder.indexOf(activeTabElement.id);
-    if (swipeDistance < -threshold && currentIndex < tabsOrder.length - 1) openTab(tabsOrder[currentIndex + 1]);
-    if (swipeDistance > threshold && currentIndex > 0) openTab(tabsOrder[currentIndex - 1]);
 }

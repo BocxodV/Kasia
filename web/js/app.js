@@ -111,6 +111,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("endDateRow").style.display = (this.value === "L4" || this.value === "Urlop") ? "flex" : "none";
     });
 
+    // --- СИНХРОНИЗАЦИЯ МАРШРУТА ---
+    const routeFrom = document.getElementById("routeFrom");
+    const routeTo = document.getElementById("routeTo");
+    const mainRouteInput = document.getElementById("routeInput");
+
+    function syncRoute() {
+        if (!mainRouteInput) return;
+        const fromText = routeFrom ? routeFrom.value.trim() : "";
+        const toText = routeTo ? routeTo.value.trim() : "";
+
+        if (fromText && toText) {
+            mainRouteInput.value = `${fromText} - ${toText}`;
+        } else if (fromText) {
+            mainRouteInput.value = fromText;
+        } else if (toText) {
+            mainRouteInput.value = toText;
+        } else {
+            mainRouteInput.value = "";
+        }
+    }
+
+    if (routeFrom) routeFrom.addEventListener("input", syncRoute);
+    if (routeTo) routeTo.addEventListener("input", syncRoute);
+
     // --- ПРИВЯЗКА ФУНКЦИЙ К WINDOW (ЧТОБЫ РАБОТАЛ HTML ONCLICK) ---
     window.openTab = openTab;
     window.changeLanguage = changeLanguage;
