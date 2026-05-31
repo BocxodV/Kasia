@@ -33,8 +33,8 @@ from database import (
     update_last_location, get_users_for_audit, get_all_users
 )
 
-from handlers import reports, webapp, vision, voice
-from handlers.webapp import build_app_url # Подтягиваем наш генератор
+from handlers import reports, webapp, vision, voice, admin
+from handlers.webapp import build_app_url # Подтягиваем генератор
 from config import BOT_TOKEN
 
 bot = Bot(token=BOT_TOKEN)
@@ -112,6 +112,7 @@ async def silent_chat_member_update(update: types.ChatMemberUpdated):
 
 
 # === 2. ПОДКЛЮЧАЕМ РОУТЕРЫ ИЗ МОДУЛЕЙ ===
+dp.include_router(admin.router)
 dp.include_router(reports.router)
 dp.include_router(vision.router) 
 dp.include_router(voice.router) 

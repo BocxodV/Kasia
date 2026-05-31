@@ -37,7 +37,6 @@ logger = logging.getLogger(__name__)
 
 WEB_APP_URL = "https://e-ksiegowa.vercel.app/"
 
-
 class SavingsState(StatesGroup):
     waiting_for_amount = State()
 
@@ -289,7 +288,6 @@ async def web_app_handler(message: types.Message):
             dyn_url = await build_app_url(user_id) 
             total_shifts = await increment_shift_count(user_id)
             
-            # Ссылка на кофе теперь отображается в каждом чеке, показывая прогресс смен
             coffee_msg = f"\n\n☕️ <i>Всего смен: {total_shifts} | <a href='https://www.buymeacoffee.com/bocxodv'>Угостить Касю кофе</a></i>"
             
             day_idx = start_date.weekday() 
@@ -297,10 +295,9 @@ async def web_app_handler(message: types.Message):
             if user_lang == "PL": day_name = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"][day_idx]
             elif user_lang == "UKR": day_name = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"][day_idx]
 
-            # Получаем уникальную цитату из локального словаря! (Мгновенно, без задержек)
+            # ПОЛУЧАЕМ ЦИТАТУ ЛОКАЛЬНО
             motivation_text = get_random_motivation(user_lang)
 
-            # Эстетичный финальный чек
             tax_coeff_val = profile.get("tax_coeff", 0.71)
             card_money = total_gross * tax_coeff_val
             
@@ -344,7 +341,7 @@ async def web_app_handler(message: types.Message):
                 text=final_text, 
                 reply_markup=markup, 
                 parse_mode="HTML",
-                link_preview_options=LinkPreviewOptions(is_disabled=True) # Отключаем огромный баннер
+                link_preview_options=LinkPreviewOptions(is_disabled=True)
                 )
             
         elif data.get("action") == "update_settings":

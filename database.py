@@ -258,3 +258,15 @@ async def get_user_unique_records(user_id: int):
         "cars": [row[0] for row in cars], 
         "locations": [row[0] for row in locations]
     }
+
+# НОВАЯ ФУНКЦИЯ ДЛЯ ПАНЕЛИ КОМАНДИРА
+async def get_system_stats():
+    """Возвращает общую статистику системы"""
+    p = await get_pool()
+    async with p.acquire() as db:
+        users_count = await db.fetchval('SELECT COUNT(*) FROM users')
+        shifts_count = await db.fetchval('SELECT COUNT(*) FROM work_logs')
+        return {
+            "users_count": users_count or 0,
+            "shifts_count": shifts_count or 0
+        }
