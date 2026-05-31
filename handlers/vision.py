@@ -27,12 +27,12 @@ async def handle_car_photo(message: types.Message):
         prompt = """
         Ты - умный парсер автомобильных данных. Посмотри на это фото.
         Определи марку и модель автомобиля. Если видно номерной знак, прочитай его.
-        Верни ТОЛЬКО валидный JSON. Без форматирования markdown (без ```json).
+        Верни ТОЛЬКО валидный JSON.
         Формат: {"car": "Марка и Модель", "plate": "НОМЕР"}
         Если чего-то нет на фото, оставь значение пустым.
         """
         
-        # 2. Асинхронно отправляем байты в Gemini
+        # 2. Асинхронно отправляем байты в Gemini 3.5 Flash
         response = await client.aio.models.generate_content(
             model='gemini-3.5-flash',
             contents=[
@@ -41,15 +41,19 @@ async def handle_car_photo(message: types.Message):
                     data=image_bytes,
                     mime_type='image/jpeg'
                 )
-            ]
+            ],
+            # SENIOR-ФИШКА: Жестко требуем JSON от API
+            config=genai_types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.1 # Низкая температура для максимальной точности фактов
+            )
         )
         
-        # 3. Обрабатываем ответ
-        raw_text = response.text.strip().replace('```json', '').replace('```', '')
-        data = json.loads(raw_text)
+        # 3. Обрабатываем гарантированно чистый JSON
+        data = json.loads(response.text)
         
-        car = data.get("car", "")
-        plate = data.get("plate", "")
+        car = data.get("car", "").strip()
+        plate = data.get("plate", "").strip()
         
         if not car and not plate:
             await status_msg.edit_text("🤷‍♂️ Не смог распознать машину или номер. Попробуй другой ракурс!")
