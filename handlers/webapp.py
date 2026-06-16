@@ -100,7 +100,7 @@ async def build_app_url(user_id, profile=None):
     cars_str = urllib.parse.quote(",".join(history.get("cars", [])))
     locs_str = urllib.parse.quote(",".join(history.get("locations", [])))
     
-    return f"{WEB_APP_URL}?v=12&base={base:g}&extra={extra:g}&eur={eur:g}&drive={drive:g}&drive_eur={drive_eur:g}&car={default_car}&g_name={goal_name}&g_target={goal_target:g}&c_net={current_net:.1f}&c_sav={current_savings:g}&g_dead={goal_deadline}&lang={user_lang}&cars={cars_str}&locs={locs_str}"
+    return f"{WEB_APP_URL}?v=15&base={base:g}&extra={extra:g}&eur={eur:g}&drive={drive:g}&drive_eur={drive_eur:g}&car={default_car}&g_name={goal_name}&g_target={goal_target:g}&c_net={current_net:.1f}&c_sav={current_savings:g}&g_dead={goal_deadline}&lang={user_lang}&cars={cars_str}&locs={locs_str}"
 
 @router.message(Command("app"))
 async def summon_web_app(message: types.Message):
