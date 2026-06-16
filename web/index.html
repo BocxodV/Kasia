@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="ru">
   <head>
+<!doctype html>
+<html lang="ru">
+  <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -11,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Neucha&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/main.css?v=15" />
+    <link rel="stylesheet" href="css/main.css?v=16" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
@@ -26,7 +29,7 @@
             />
             <div class="polaroid-caption">Moja księgowa 🖤</div>
           </div>
-          <div class="section-title" id="t_work_data">Данные о работе</div>
+          <div class="section-title"><span id="t_work_data">Данные о работе</span> <span class="help-icon" onclick="window.showHelp('work_data')">[?]</span></div>
           <div class="block">
             <div class="input-row">
               <label id="l_date">📅 Дата</label>
@@ -68,7 +71,7 @@
             </div>
           </div>
 
-          <div class="section-title" id="t_logistics">Логистика и Часы</div>
+          <div class="section-title"><span id="t_logistics">Логистика и Часы</span> <span class="help-icon" onclick="window.showHelp('logistics')">[?]</span></div>
           <div class="block">
             <div class="input-row">
               <label id="l_hours">⏱ На объекте (ч)</label>
@@ -101,7 +104,7 @@
         <div id="garage" class="content">
           <div class="polaroid-container">
             <img
-              src="arts/kasia_garage_1.jpg"
+              src="arts/kasia_garage_1.png"
               alt="Кася в гараже"
               class="kasiaAvatar"
             />
@@ -199,8 +202,8 @@
         <div id="envelope" class="content">
           <div class="polaroid-container">
             <img
-              src="arts/kasia_envelope_1.jpg"
-              alt="Кася с конвертом"
+              src="arts/kasia_envelope_1.png"
+              alt="Kasia Audyt"
               class="kasiaAvatar"
             />
           </div>
@@ -225,13 +228,13 @@
               id="btn_audit"
               onclick="sendAuditReq()"
             >
-              ✉️ Посчитать конверт
+              ⚖️ Audyt wyrównania
             </button>
           </div>
 
           <p class="hint-text" id="t_envelope_desc">
             Кася сверит твои часы с переводами на карту и скажет, сколько злотых
-            шеф должен отдать в конверте!
+            zostaje jako Nierozliczone saldo!
           </p>
         </div>
 
@@ -294,12 +297,19 @@
 
           <div class="export-actions">
             <button
-              type="button"
-              class="btn-export"
+              class="btn-main"
               id="btn_export"
               onclick="sendReportReq()"
             >
               📥 Прислать Excel в чат
+            </button>
+            <button
+              class="btn-main"
+              id="btn_export_boss"
+              onclick="sendBossReportReq()"
+              style="background-color: var(--highlight-orange); margin-top: 5px;"
+            >
+              👨‍💼 Отчет для шефа
             </button>
           </div>
 
@@ -312,7 +322,7 @@
         <div id="analytics" class="content">
           <div class="polaroid-container">
             <img
-              src="arts/kasia_analytics_1.jpg"
+              src="arts/kasia_analytics_1.png"
               alt="Кася аналитик"
               class="kasiaAvatar"
             />
@@ -380,7 +390,7 @@
             />
           </div>
 
-          <div class="section-title" id="t_lang">Язык интерфейса</div>
+          <div class="section-title"><span id="t_lang">Язык интерфейса</span> <span class="help-icon" onclick="window.showHelp('lang')">[?]</span></div>
           <div class="block">
             <div class="input-row">
               <label for="langInput" id="l_lang_select">🌐 Язык</label>
@@ -392,7 +402,7 @@
             </div>
           </div>
 
-          <div class="section-title" id="t_goal">🎯 Моя финансовая цель</div>
+          <div class="section-title"><span id="t_goal">🎯 Моя финансовая цель</span> <span class="help-icon" onclick="window.showHelp('goal')">[?]</span></div>
           <div class="block">
             <div class="input-row">
               <label for="goalNameInput" id="l_goal_name">Название</label>
@@ -410,8 +420,9 @@
             </div>
           </div>
 
-          <div class="section-title" id="t_profile">
-            Финансовый профиль (Ставки)
+          <div class="section-title">
+            <span id="t_profile">👤 Мои ставки и настройки</span>
+            <span class="help-icon" onclick="window.showHelp('profile')">[?]</span>
           </div>
           <div class="block">
             <div class="input-row">
@@ -426,7 +437,7 @@
               />
             </div>
             <div class="input-row">
-              <label for="extraRateInput" id="l_env">✉️ Конверт (zł/h)</label>
+              <label for="extraRateInput" id="l_env">⚖️ Stawka docelowa (zł/h)</label>
               <input
                 type="number"
                 step="0.1"
@@ -500,6 +511,15 @@
       </div>
     </div>
 
-    <script type="module" src="js/app.js?v=15"></script>
+    <!-- Модальное окно для справок -->
+    <div id="helpModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="window.closeHelp()">&times;</span>
+        <h3 id="helpTitle">Справка</h3>
+        <p id="helpText">Текст справки...</p>
+      </div>
+    </div>
+
+    <script type="module" src="js/app.js?v=13"></script>
   </body>
 </html>

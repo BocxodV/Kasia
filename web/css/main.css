@@ -26,7 +26,8 @@ body {
     padding: 15px 10px;
     background-color: #d9d0c1;
     font-family: 'Neucha', cursive;
-    height: 100vh;
+    /* Используем переменную, которую выставляем через JS из tg.viewportHeight */
+    height: var(--tg-viewport-height, 100vh);
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -157,7 +158,7 @@ select {
     border: none;
     background: transparent;
     text-align: right;
-    font-size: 20px;
+    font-size: clamp(16px, 4vw, 20px);
     font-family: 'Neucha', cursive;
     color: #1a252f;
     width: 50%;
@@ -203,7 +204,7 @@ input[type="checkbox"] {
     border-radius: 15px 5px 25px 5px / 5px 15px 5px 25px;
     width: 100%;
     padding: 12px;
-    font-size: 22px;
+    font-size: clamp(18px, 5vw, 22px);
     font-weight: bold;
     font-family: 'Neucha', cursive;
     cursor: pointer;
@@ -264,4 +265,53 @@ input[type="checkbox"] {
     background-color: #fdfbf7 !important;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
     border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.help-icon {
+    color: var(--highlight-blue, #3498db);
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 5px;
+    text-decoration: none;
+}
+
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.5); 
+}
+
+.modal-content {
+    background-color: #fdfbf7;
+    margin: 20% auto;
+    padding: 20px;
+    border: 2px solid var(--ink-color, #2c3e50);
+    width: 85%;
+    max-width: 400px;
+    border-radius: 10px;
+    font-family: 'Neucha', cursive;
+    color: #2c3e50;
+    position: relative;
+    box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: -10px;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: var(--highlight-orange, #e74c3c);
+    text-decoration: none;
 }

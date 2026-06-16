@@ -7,4 +7,12 @@ export const tg = window.Telegram.WebApp;
 export function initTelegram() {
     tg.expand();
     tg.ready();
+
+    // Устанавливаем точную высоту от Telegram, чтобы контент не уходил за пределы экрана
+    function syncViewportHeight() {
+        const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
+        document.documentElement.style.setProperty('--tg-viewport-height', `${h}px`);
+    }
+    syncViewportHeight();
+    tg.onEvent('viewportChanged', syncViewportHeight);
 }

@@ -3,7 +3,7 @@ import { tg, initTelegram } from './core/telegram.js';
 import { state, TRANSLATIONS } from './core/state.js';
 import { openTab, setupSwipes, updatePolaroid } from './modules/tabs.js';
 import { triggerCarScan } from './modules/camera.js';
-import { sendShift, sendReportReq, sendHistoryReq, sendAnalyticsReq, sendSettings, sendAuditReq, openGoogleMaps } from './modules/api.js';
+import { sendShift, sendReportReq, sendBossReportReq, sendHistoryReq, sendAnalyticsReq, sendSettings, sendAuditReq, openGoogleMaps } from './modules/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initTelegram();
@@ -141,11 +141,43 @@ document.addEventListener('DOMContentLoaded', () => {
     window.triggerCarScan = triggerCarScan;
     window.sendShift = sendShift;
     window.sendReportReq = sendReportReq;
+    window.sendBossReportReq = sendBossReportReq;
     window.sendHistoryReq = sendHistoryReq;
     window.sendAnalyticsReq = sendAnalyticsReq;
     window.sendSettings = sendSettings;
     window.sendAuditReq = sendAuditReq;
     window.openGoogleMaps = openGoogleMaps;
+
+    window.showHelp = function(sectionId) {
+        const modal = document.getElementById("helpModal");
+        const titleEl = document.getElementById("helpTitle");
+        const textEl = document.getElementById("helpText");
+        
+        let t = TRANSLATIONS[state.currentLang] || TRANSLATIONS["RUS"];
+        
+        const texts = {
+            work_data: t.help_work_data || "Здесь заполняются базовые данные о смене: Дата, Статус (Работа/Больничный/Отпуск), Локация. Если смена за границей или полагается диета - отметьте это галочкой.",
+            logistics: t.help_logistics || "Укажите часы работы на объекте и часы в пути. Обязательно впишите маршрут и авто, если вы были за рулем.",
+            lang: t.help_lang || "Выберите язык интерфейса и приложения. Все дальнейшие сообщения от бота будут приходить на этом языке.",
+            goal: t.help_goal || "Установите свою финансовую цель! Введите название (например, 'Машина'), нужную сумму и дату. Кася рассчитает, сколько нужно откладывать.",
+            profile: t.help_profile || "Укажите ваши актуальные ставки (базовая, переработки, евро, за рулем). Эта информация будет использоваться для расчетов."
+        };
+        
+        titleEl.innerText = t.help_title || "Справка";
+        textEl.innerText = texts[sectionId] || "";
+        modal.style.display = "block";
+    };
+
+    window.closeHelp = function() {
+        document.getElementById("helpModal").style.display = "none";
+    };
+
+    window.onclick = function(event) {
+        const modal = document.getElementById("helpModal");
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
 
     // Запуск первой вкладки
     openTab('shift');

@@ -21,14 +21,17 @@ export function updatePolaroid(tabId) {
     const randomNum = Math.floor(Math.random() * 5) + 1;
     const imgElement = document.querySelector(`#${tabId} .kasiaAvatar`);
     
+    // Файлы, которые мы заменили на .png (новые арты Каси)
+    const pngCategories = new Set(['garage', 'envelope', 'analytics']);
+    
     if (imgElement) {
         let finalCategory = category;
         const statusInput = document.getElementById("statusInput");
-        // Если статус "Отпуск" и мы на вкладке Смена, используем категорию vacation
         if (statusInput && tabId === 'shift' && statusInput.value === 'Urlop') {
             finalCategory = 'vacation';
         }
-        imgElement.src = `arts/kasia_${finalCategory}_${randomNum}.jpg`;
+        const ext = pngCategories.has(finalCategory) ? 'png' : 'jpg';
+        imgElement.src = `arts/kasia_${finalCategory}_${randomNum}.${ext}`;
     }
 }
 

@@ -28,6 +28,11 @@ export function sendReportReq() {
     tg.close(); 
 }
 
+export function sendBossReportReq() { 
+    tg.sendData(JSON.stringify({ action: "get_boss_report", month: document.getElementById("reportMonth").value.split("-").reverse().join(".") })); 
+    tg.close(); 
+}
+
 export function sendHistoryReq() { 
     tg.sendData(JSON.stringify({ action: "history", month: document.getElementById("historyMonth").value.split("-").reverse().join(".") })); 
     tg.close(); 

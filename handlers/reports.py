@@ -118,7 +118,7 @@ async def generate_excel_report(callback: types.CallbackQuery = None, target_use
 
     ws.append([])
     ws.append(["", "", "", "", "", "💳 НА КАРТУ (Официально):", "", "", "", "", "", "", round(card_money, 2), "zł"])
-    ws.append(["", "", "", "", "", "✉️ В КОНВЕРТЕ (Наличка):", "", "", "", "", "", "", round(envelope_money, 2), "zł"])
+    ws.append(["", "", "", "", "", "⚖️ Audyt wyrównania:", "", "", "", "", "", "", round(envelope_money, 2), "zł"])
 
     for row_idx in range(ws.max_row - 2, ws.max_row + 1):
         for cell in ws[row_idx]:
@@ -161,6 +161,5 @@ async def generate_excel_report(callback: types.CallbackQuery = None, target_use
         print(f"Ошибка отправки отчета: {e}")
         if callback:
             await callback.message.answer("⚠️ Ошибка обработки данных.")
-            
     # Больше никакого блока finally и os.remove! 
     # Сборщик мусора Python сам очистит память.

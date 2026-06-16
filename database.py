@@ -79,6 +79,7 @@ async def init_db():
 async def get_user_profile(user_id):
     p = await get_pool()
     async with p.acquire() as db:
+        await db.execute('INSERT INTO users (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING', user_id)
         user = await db.fetchrow('''
             SELECT 
                 language, base_rate, extra_rate, tax_coeff, rate_drive, 
@@ -88,8 +89,8 @@ async def get_user_profile(user_id):
         ''', user_id)
 
         if not user:
-            await db.execute('INSERT INTO users (user_id) VALUES ($1)', user_id)
-            return await get_user_profile(user_id)
+            # Fallback in case of DB issues
+            return {"lang": "RUS", "base_rate": 0.0, "extra_rate": 0.0, "tax_coeff": 0.0, "rate_drive": 0.0, "rate_eur": 0.0, "rate_drive_eur": 0.0, "default_car": "", "goal_name": "Финансовая цель", "goal_target": 8000.0, "current_savings": 0.0, "goal_deadline": ""}
         
         return {
             "lang": user[0],
@@ -107,6 +108,16 @@ async def get_user_profile(user_id):
         }
 
 async def update_user_setting(user_id, field, value):
+    ALLOWED_FIELDS = {
+        "language", "base_rate", "extra_rate", "tax_coeff", "rate_drive", 
+        "rate_eur", "rate_drive_eur", "default_car", "goal_name", 
+        "goal_target", "current_savings", "goal_deadline", "last_location", 
+        "last_country"
+    }
+    if field not in ALLOWED_FIELDS:
+        logger.error(f"Attempt to update invalid field: {field}")
+        return
+        
     p = await get_pool()
     async with p.acquire() as db:
         await db.execute(f'UPDATE users SET {field} = $1 WHERE user_id = $2', value, user_id)

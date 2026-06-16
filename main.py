@@ -2,6 +2,9 @@ import asyncio
 import logging
 import os
 import traceback
+import hashlib
+import hmac
+import urllib.parse
 from datetime import datetime, timedelta
 
 from aiogram import Bot, Dispatcher, types, F
@@ -34,7 +37,7 @@ from database import (
     update_last_location, get_users_for_audit, get_all_users, update_user_setting
 )
 
-from handlers import reports, webapp, vision, voice, admin
+from handlers import admin, webapp, reports, vision, voice, feedback
 from handlers.webapp import build_app_url
 from handlers.vision import process_image_bytes # Подтягиваем ИИ-парсер
 
@@ -47,6 +50,20 @@ dp = Dispatcher()
 WEBHOOK_PATH = "/webhook"
 webhook_base = os.getenv("WEBHOOK_URL", "").rstrip("/")
 WEBHOOK_URL = f"{webhook_base}{WEBHOOK_PATH}" if webhook_base else ""
+
+def verify_telegram_web_app_data(init_data: str, bot_token: str) -> bool:
+    try:
+        parsed_data = urllib.parse.parse_qsl(init_data)
+        data_dict = {k: v for k, v in parsed_data}
+        if "hash" not in data_dict:
+            return False
+        received_hash = data_dict.pop("hash")
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(data_dict.items()))
+        secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+        calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        return calculated_hash == received_hash
+    except Exception:
+        return False
 
 
 # === 1. БАЗОВЫЕ ОБРАБОТЧИКИ (РЕГИСТРИРУЕМ ПЕРВЫМИ!) ===
@@ -107,6 +124,35 @@ async def handle_start(message: types.Message):
         reply_markup=markup
     )
 
+@dp.callback_query(F.data.startswith("lang_"))
+async def process_lang_selection(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    lang_code = callback.data.split("_")[1]
+    
+    await update_user_language(user_id, lang_code)
+    t = TRANSLATIONS.get(lang_code, TRANSLATIONS["RUS"])
+    
+    profile = await get_user_profile(user_id)
+    profile["lang"] = lang_code
+    dyn_url = await build_app_url(user_id, profile)
+    
+    markup = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))]],
+        resize_keyboard=True 
+    )
+    
+    await callback.bot.set_chat_menu_button(
+        chat_id=user_id,
+        menu_button=MenuButtonWebApp(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))
+    )
+    
+    await callback.message.answer(
+        text=t["set_ok"],
+        parse_mode="Markdown",
+        reply_markup=markup
+    )
+    await callback.answer()
+
 @dp.my_chat_member()
 async def silent_chat_member_update(update: types.ChatMemberUpdated):
     pass
@@ -115,8 +161,9 @@ async def silent_chat_member_update(update: types.ChatMemberUpdated):
 # === 2. ПОДКЛЮЧАЕМ РОУТЕРЫ ИЗ МОДУЛЕЙ ===
 dp.include_router(admin.router)
 dp.include_router(reports.router)
-dp.include_router(vision.router) 
-dp.include_router(voice.router) 
+dp.include_router(vision.router)
+dp.include_router(voice.router)
+dp.include_router(feedback.router)
 dp.include_router(webapp.router) 
 
 
@@ -152,7 +199,7 @@ async def on_shutdown(bot: Bot):
 async def api_scan_car(request):
     # Разрешаем браузеру Vercel общаться с Cloud Run
     headers = {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'https://e-ksiegowa.vercel.app',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
     }
@@ -163,6 +210,10 @@ async def api_scan_car(request):
         data = await request.post()
         photo = data.get('photo')
         user_id = data.get('user_id')
+        init_data = data.get('initData')
+
+        if not init_data or not verify_telegram_web_app_data(init_data, BOT_TOKEN):
+            return web.json_response({"error": "Unauthorized"}, status=403, headers=headers)
 
         if not photo:
             return web.json_response({"error": "No photo"}, status=400, headers=headers)

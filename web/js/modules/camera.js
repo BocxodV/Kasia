@@ -55,6 +55,7 @@ export async function triggerCarScan() {
             const formData = new FormData();
             formData.append("photo", blob, "car_scan.jpg");
             formData.append("user_id", tg.initDataUnsafe?.user?.id || "unknown");
+            formData.append("initData", tg.initData || "");
 
             try {
                 // Прямой вызов нашего API-шлюза на Cloud Run

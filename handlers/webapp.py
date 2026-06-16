@@ -76,7 +76,10 @@ async def calculate_forecast(user_id, profile=None):
 async def build_app_url(user_id, profile=None):
     if not profile:
         profile = await get_user_profile(user_id)
+    _ALLOWED_LANGS = {"RUS", "UKR", "PL"}
     user_lang = profile.get("lang", "RUS")
+    if user_lang not in _ALLOWED_LANGS:
+        user_lang = "RUS"
     current_month = datetime.now().strftime("%m.%Y")
     current_net = await get_monthly_net_sum(user_id, current_month)
     
@@ -315,7 +318,7 @@ async def web_app_handler(message: types.Message):
                 f"💵 На руки:   <code>{total_net:.2f} zł</code>\n"
                 f"📄 Брутто:    <code>{total_gross:.2f} zł</code>\n"
                 f"💳 На карту:  <code>{card_money:.2f} zł</code>\n"
-                f"✉️ В конверте: <code>{total_cash_diff:.2f} zł</code>\n"
+                f"⚖️ Nierozliczone saldo: <code>{total_cash_diff:.2f} zł</code>\n"
                 "━━━━━━━━━━━━━━━━━━━━\n"
                 f"<i>{motivation_text}</i>\n"
                 f"{ai_advice}"
@@ -366,9 +369,23 @@ async def web_app_handler(message: types.Message):
             await message.answer(t["set_ok"], parse_mode="HTML", reply_markup=markup)
 
         elif data.get("action") == "get_report":
-            target_month = data.get("month") or datetime.now().strftime("%m.%Y")
-            status_msg = await message.answer(t["report_wait"].format(month=target_month))
-            await generate_excel_report(callback=None, target_user_id=user_id, target_month=target_month, bot=message.bot)
+            month = data.get("month") or datetime.now().strftime("%m.%Y")
+            status_msg = await message.answer(t["report_wait"].format(month=month))
+            from handlers.reports import generate_excel_report
+            await generate_excel_report(target_user_id=user_id, target_month=month, bot=message.bot)
+            try:
+                await status_msg.delete()
+            except Exception: pass
+            await increment_report_count(user_id)
+            reports_count, is_premium = await get_user_subscription_status(user_id)
+            if not is_premium and reports_count > 0 and reports_count % 5 == 0:
+                await message.answer(t["freemium"].format(count=reports_count), parse_mode="Markdown", reply_markup=get_support_keyboard(user_lang))
+
+        elif data.get("action") == "get_boss_report":
+            month = data.get("month") or datetime.now().strftime("%m.%Y")
+            status_msg = await message.answer(t["report_wait"].format(month=month))
+            from handlers.reports import generate_boss_excel_report
+            await generate_boss_excel_report(target_user_id=user_id, target_month=month, bot=message.bot)
             try:
                 await status_msg.delete()
             except Exception: pass
