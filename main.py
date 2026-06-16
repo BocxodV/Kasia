@@ -1,48 +1,24 @@
-import sys
+import asyncio
+import logging
 import os
-import time
+import traceback
+import hashlib
+import hmac
+import urllib.parse
+from datetime import datetime, timedelta
 
-print("=== STARTUP DEBUG ===")
-print("Python Executable:", sys.executable)
-print("Python Path:", sys.path)
-try:
-    site_packages = "/usr/local/lib/python3.11/site-packages"
-    if os.path.exists(site_packages):
-        print("Site packages contents:", sorted(os.listdir(site_packages)))
-    else:
-        print("Site packages folder NOT found!")
-except Exception as e:
-    print("Debug listing failed:", e)
-print("=====================")
-sys.stdout.flush()
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters import CommandStart
+from aiogram.types import (
+    FSInputFile, MenuButtonWebApp, WebAppInfo, 
+    ReplyKeyboardMarkup, KeyboardButton, 
+    InlineKeyboardMarkup, InlineKeyboardButton
+)
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-try:
-    import asyncio
-    import logging
-    import traceback
-    import hashlib
-    import hmac
-    import urllib.parse
-    from datetime import datetime, timedelta
-
-    from aiogram import Bot, Dispatcher, types, F
-    from aiogram.filters import CommandStart
-    from aiogram.types import (
-        FSInputFile, MenuButtonWebApp, WebAppInfo, 
-        ReplyKeyboardMarkup, KeyboardButton, 
-        InlineKeyboardMarkup, InlineKeyboardButton
-    )
-    from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-    # === НОВЫЕ ИМПОРТЫ ДЛЯ WEBHOOK ===
-    from aiohttp import web
-    from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
-except Exception as e:
-    print("CRITICAL IMPORT ERROR:", e)
-    traceback.print_exc()
-    sys.stdout.flush()
-    time.sleep(15)
-    sys.exit(1)
+# === НОВЫЕ ИМПОРТЫ ДЛЯ WEBHOOK ===
+from aiohttp import web
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 # === НАСТРОЙКА ЛОГИРОВАНИЯ ===
 logging.basicConfig(
