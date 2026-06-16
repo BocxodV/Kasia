@@ -110,7 +110,7 @@
             />
           </div>
 
-          <h2 id="t_garage">Мой Гараж</h2>
+          <h2 id="t_garage">Мой Гараж <span class="help-icon" onclick="window.showHelp('garage')">[?]</span></h2>
 
           <div class="form-group">
             <label for="garageCarInput">🚗 Текущий автомобиль:</label>
@@ -153,7 +153,7 @@
             />
           </div>
 
-          <h2 id="t_nav">Навигация</h2>
+          <h2 id="t_nav">Навигация <span class="help-icon" onclick="window.showHelp('nav')">[?]</span></h2>
 
           <div class="route-box">
             <div class="form-group">
@@ -208,7 +208,7 @@
             />
           </div>
 
-          <h2 id="t_audit">Интерактивный аудит ЗП</h2>
+          <h2 id="t_audit">Интерактивный аудит ЗП <span class="help-icon" onclick="window.showHelp('audit')">[?]</span></h2>
 
           <div class="audit-box">
             <div class="form-group">
@@ -247,7 +247,7 @@
             />
           </div>
 
-          <h2 id="t_history">История и редактирование</h2>
+          <h2 id="t_history">История <span class="help-icon" onclick="window.showHelp('history')">[?]</span></h2>
 
           <div class="history-box">
             <div class="form-group">
@@ -284,7 +284,7 @@
             />
           </div>
 
-          <h2 id="t_export">Экспорт Excel</h2>
+          <h2 id="t_export">Экспорт Excel <span class="help-icon" onclick="window.showHelp('export')">[?]</span></h2>
 
           <div class="export-box">
             <div class="form-group">
@@ -328,7 +328,7 @@
             />
           </div>
 
-          <h2 id="t_analytics">Топ объектов</h2>
+          <h2 id="t_analytics">Топ объектов <span class="help-icon" onclick="window.showHelp('analytics')">[?]</span></h2>
 
           <div class="analytics-box">
             <div class="form-group">
@@ -365,7 +365,7 @@
             />
           </div>
 
-          <h2 id="t_progress">🎯 Моя копилка</h2>
+          <h2 id="t_progress">🎯 Моя копилка <span class="help-icon" onclick="window.showHelp('savings')">[?]</span></h2>
 
           <div class="savings-box">
             <h3 id="goalNameDisplay" class="goal-title">Дом у моря</h3>
@@ -478,6 +478,26 @@
             </div>
           </div>
 
+          <div class="section-title">
+            <span id="t_feedback_title">💬 Обратная связь</span>
+          </div>
+          <div class="block">
+            <div style="display: flex; flex-direction: column; width: 100%;">
+              <textarea
+                id="feedbackTextInput"
+                style="width: 100%; min-height: 80px; padding: 10px; border-radius: 8px; border: 1px dashed var(--hint-ink); font-family: inherit; margin-bottom: 10px; resize: vertical; box-sizing: border-box; background: rgba(0,0,0,0.02); color: var(--ink-color);"
+              ></textarea>
+              <button
+                type="button"
+                class="btn-secondary"
+                id="btn_send_feedback"
+                onclick="sendFeedback()"
+                style="width: 100%; cursor: pointer;"
+              >
+                Отправить отзыв
+              </button>
+            </div>
+          </div>
           <button
             class="btn-main"
             id="btn_save_settings"

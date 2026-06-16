@@ -163,3 +163,97 @@ async def generate_excel_report(callback: types.CallbackQuery = None, target_use
             await callback.message.answer("⚠️ Ошибка обработки данных.")
     # Больше никакого блока finally и os.remove! 
     # Сборщик мусора Python сам очистит память.
+
+async def generate_boss_excel_report(target_user_id, target_month, bot: Bot):
+    profile = await get_user_profile(target_user_id)
+    user_lang = profile.get("lang", "RUS")
+    t = TRANSLATIONS.get(user_lang, TRANSLATIONS["RUS"])
+
+    rows = await get_work_logs_for_month(target_user_id, target_month)
+
+    if not rows:
+        await bot.send_message(target_user_id, t["empty_db"])
+        return
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f"Logistyka {target_month}"
+
+    header_fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    center_aligned = Alignment(horizontal="center", vertical="center")
+    left_aligned = Alignment(horizontal="left", vertical="center")
+
+    urlop_fill = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
+    l4_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+
+    headers = t.get("excel_boss_headers", ["Data", "Dzień", "Status", "Obiekt", "Auto", "Trasa", "Suma h", "Jazda"])
+    ws.append(headers)
+
+    for cell in ws[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_aligned
+
+    total_hours, total_drive_hours = 0.0, 0.0
+
+    for row in rows:
+        excel_row = [
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        ]
+        ws.append(excel_row)
+
+        current_row_num = ws.max_row
+        status = row[2]
+        fill_to_apply = urlop_fill if status == "Urlop" else l4_fill if status == "L4" else None
+
+        for col_num, cell in enumerate(ws[current_row_num], start=1):
+            if fill_to_apply:
+                cell.fill = fill_to_apply
+            if col_num in [4, 5, 6]:
+                cell.alignment = left_aligned
+            else:
+                cell.alignment = center_aligned
+
+        total_hours += float(row[6] or 0)
+        total_drive_hours += float(row[7] or 0)
+
+    ws.append([]) 
+
+    total_row = [
+        "", "", "", "", t["total_month"], "", round(total_hours, 1), round(total_drive_hours, 1)
+    ]
+    ws.append(total_row)
+
+    for cell in ws[ws.max_row]:
+        cell.font = Font(bold=True)
+        cell.alignment = center_aligned
+
+    ws.append([])
+    last_row = ws.max_row + 1
+    ws.merge_cells(start_row=last_row, start_column=5, end_row=last_row, end_column=8)
+    sig_cell = ws.cell(row=last_row, column=5)
+    sig_cell.value = "© Created by bocxodv"
+    sig_cell.font = Font(italic=True, size=9, color="A6A6A6")
+    sig_cell.alignment = Alignment(horizontal="right", vertical="center")
+
+    for col in ws.columns:
+        max_length = max((len(str(cell.value)) for cell in col if cell.value is not None), default=0)
+        ws.column_dimensions[col[0].column_letter].width = (max_length * 1.25) + 3
+
+    file_buffer = io.BytesIO()
+    wb.save(file_buffer)
+    file_buffer.seek(0)
+    
+    file_name = f"Logistyka_{target_month}.xlsx"
+    document = BufferedInputFile(file_buffer.read(), filename=file_name)
+
+    caption_text = t.get("excel_boss_caption", "📊 Raport operacyjny za {month}\n🕒 Przepracowano: **{hours} h.**").format(
+        month=target_month,
+        hours=round(total_hours, 1)
+    )
+
+    try:
+        await bot.send_document(target_user_id, document, caption=caption_text, parse_mode="Markdown")
+    except Exception as e:
+        print(f"Ошибка отправки отчета для шефа: {e}")

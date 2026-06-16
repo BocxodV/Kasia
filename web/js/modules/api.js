@@ -85,3 +85,13 @@ export function openGoogleMaps() {
 
     tg.openLink(mapsUrl);
 }
+
+export function sendFeedback() {
+    const el = document.getElementById("feedbackTextInput");
+    const text = el ? el.value.trim() : "";
+    if (!text) {
+        return tg.showAlert(TRANSLATIONS[state.currentLang].alert_feedback_empty || "Введите текст отзыва!");
+    }
+    tg.sendData(JSON.stringify({ action: "feedback", text: text }));
+    tg.close();
+}

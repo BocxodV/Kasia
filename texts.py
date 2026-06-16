@@ -50,7 +50,9 @@ TRANSLATIONS = {
         # --- НОВЫЕ КЛЮЧИ ---
         "menu_btn": "📱 Панель",
         "menu_msg": "⚡️ Интерактивная панель теперь всегда доступна по кнопке меню слева от поля ввода!",
-        "welcome_text": "Привет! Я твоя ИИ-бухгалтерша Кася 👩‍💼\n\nЯ помогу тебе вести учет рабочих смен, логистики и точно рассчитаю твою зарплату (включая L4 и отпускные).\n\n⚠️ **Юридический дисклеймер:**\nБот предоставляет математические расчеты (Audyt wyrównania, Nierozliczone saldo). Пользователь несет личную ответственность за декларирование любых доходов и уплату налогов в соответствии с законодательством РП.\n\nЧтобы начать, нажми кнопку **«📱 Панель»** в меню слева внизу! 👇",
+        "welcome_text": "👋 Привет! Я Кася — твой умный ИИ-помощник по учету работы и зарплаты в Польше! 👩‍💼\n\nС моей помощью ты сможешь легко:\n1️⃣ Вести точный учет рабочих смен, часов на объекте и времени за рулем ⏱\n2️⃣ Контролировать расчеты официальной зарплаты (нетто/брутто), больничных (L4) и отпусков 🌴\n3️⃣ Управлять командировочными (диетами) с автопереводом валют по курсу NBP 💶\n4️⃣ Накапливать средства в виртуальной «копилке» и отслеживать движение к своей финансовой цели 🎯\n\n⚠️ **Юридический дисклеймер:**\nБот предоставляет исключительно математические расчеты и аналитические инструменты (Audyt wyrównania, Nierozliczone saldo) для самоконтроля. Пользователь несет полную личную ответственность за декларирование своих доходов и уплату налогов в соответствии с законодательством Республики Польша.\n\nЧтобы начать свой путь к финансовому порядку, нажми кнопку **«📱 Панель»** ниже! 👇",
+        "excel_boss_headers": ["Дата", "День", "Статус", "Объект", "Авто", "Маршрут", "Всего ч.", "Руль"],
+        "excel_boss_caption": "📊 Операционный отчет за {month}\n🕒 Всего отработано: **{hours} ч.**",
     },
     "UKR": {
         "saving": "⏳ Зберігаю...",
@@ -99,14 +101,16 @@ TRANSLATIONS = {
         # --- НОВЫЕ КЛЮЧИ ---
         "menu_btn": "📱 Панель",
         "menu_msg": "⚡️ Інтерактивна панель тепер завжди доступна за кнопкою меню зліва від поля введення!",
-        "welcome_text": "Привіт! Я твоя ШІ-бухгалтерка Кася 👩‍💼\n\nЯ допоможу тобі вести облік робочих змін, логістики та точно розрахую твою зарплату (включаючи L4 та відпускні).\n\n⚠️ **Юридичний дисклеймер:**\nБот надає математичні розрахунки (Audyt wyrównania, Nierozliczone saldo). Користувач несе особисту відповідальність за декларування будь-яких доходів та сплату податків відповідно до законодавства РП.\n\nЩоб почати, натисни кнопку **«📱 Панель»** у меню зліва внизу! 👇",
+        "welcome_text": "👋 Привіт! Я Кася — твій розумний ШІ-помічник з обліку роботи та зарплати в Польщі! 👩‍💼\n\nЗ моєю допомогою ти зможеш легко:\n1️⃣ Вести точний облік робочих змін, годин на об'єкті та часу за кермом ⏱\n2️⃣ Контролювати розрахунки офіційної зарплати (нетто/брутто), лікарняних (L4) та відпусток 🌴\n3️⃣ Керувати відрядженнями (дієтами) з автопереведенням валют за курсом NBP 💶\n4️⃣ Накопичувати кошти у віртуальній «скарбничці» та відстежувати рух до своєї фінансової цілі 🎯\n\n⚠️ **Юридичний дисклеймер:**\nБот надає виключно математичні розрахунки та аналітичні інструменти (Audyt wyrównania, Nierozliczone saldo) для самоконтроля. Користувач несе повну особисту ответственность за декларування своїх доходів та сплату податків відповідно до законодавства Республіки Польща.\n\nЩоб почати свій шлях до фінансового порядку, натисни кнопку **«📱 Панель»** нижче! 👇",
+        "excel_boss_headers": ["Дата", "День", "Статус", "Об'єкт", "Авто", "Маршрут", "Всього год.", "Кермо"],
+        "excel_boss_caption": "📊 Операційний звіт за {month}\n🕒 Всього відпрацьовано: **{hours} год.**",
     },
     "PL": {
         "saving": "⏳ Zapisuję...",
         "report_wait": "⏳ Generuję raport za {month}...",
         "total_month": "Razem za miesiąc:",
         "freemium": "🤝 **Kolego, chwila uwagi!**\n\nTo Twój **{count}.** wygenerowany raport. Oszczędzam Ci mnóstwo czasu na rozliczeniach z biurem i podatkach.\n\nAby bot działał stabilnie i się rozwijał, możesz wesprzeć projekt symboliczną kwotą «na kawę ☕».",
-        "audit_ok": "📊 **Audyt za {month}**\n\n💳 Wpłynęło na konto: **{card} zł**\n💰 Całkowity zarobek: **{total} zł**\n〰️〰️〰️〰️〰️〰️〰️\n✉️ **W KOPERCIE: {env} zł**",
+        "audit_ok": "📊 **Audyt za {month}**\n\n💳 Wpłynęło na konto: **{card} zł**\n💰 Całkowity zarobek: **{total} zł**\n〰️〰️〰️〰️〰️〰️〰️\n⚖️ **Nierozliczone saldo: {env} zł**",
         "audit_err": "⚠️ Brak zapisów o dniach pracy w {month}.",
         "hist_err": "📭 Brak zapisanych zmian w {month}.",
         "hist_ok": "📜 **Historia zmian w {month}**\nKliknij ❌, aby usunąć błędny wpis:\n\n",
@@ -148,7 +152,9 @@ TRANSLATIONS = {
         # --- НОВЫЕ КЛЮЧИ ---
         "menu_btn": "📱 Panel",
         "menu_msg": "⚡️ Interaktywny panel jest teraz zawsze dostępny pod przyciskiem menu po lewej stronie pola wprowadzania!",
-        "welcome_text": "Cześć! Jestem Twoją księgową AI 👩‍💼\n\nPomogę Ci prowadzić ewidencję zmian, logistyki i dokładnie obliczę Twoją wypłatę (brutto, netto, a nawet «w kopercie»).\n\nAby zacząć, kliknij przycisk **«📱 Panel»** w menu w lewym dolnym rogu! 👇"
+        "welcome_text": "👋 Cześć! Jestem Kasia — Twój inteligentny asystent AI do rejestracji czasu pracy i wynagrodzeń w Polsce! 👩‍💼\n\nZe mną możesz łatwo:\n1️⃣ Prowadzić dokładną ewidencję zmian, godzin na obiekcie i czasu za kierownicą ⏱\n2️⃣ Kontrolować rozliczenia oficjalnego wynagrodzenia (netto/brutto), zwolnień (L4) i urlopów 🌴\n3️⃣ Zarządzać delegacjami (dietami) z automatycznym przeliczaniem walut według kursu NBP 💶\n4️⃣ Oszczędzać pieniądze w wirtualnej «skarbonce» i śledzić realizację swojego celu finansowego 🎯\n\n⚠️ **Zastrzeżenie prawne:**\nBot wykonuje wyłącznie obliczenia matematyczne oraz udostępnia narzędzia analityczne (Audyt wyrównania, Nierozliczone saldo) do samokontroli. Użytkownik ponosi pełną osobistą odpowiedzialność za zgłaszanie swoich dochodów i opłacanie podatków zgodnie z przepisami Rzeczypospolitej Polskiej.\n\nAby zacząć drogę do porządku finansowego, kliknij przycisk **«📱 Panel»** poniżej! 👇",
+        "excel_boss_headers": ["Data", "Dzień", "Status", "Obiekt", "Auto", "Trasa", "Suma h", "Jazda"],
+        "excel_boss_caption": "📊 Raport operacyjny za {month}\n🕒 Przepracowano łącznie: **{hours} h.**",
     }
 }
 

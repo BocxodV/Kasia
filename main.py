@@ -77,7 +77,7 @@ async def handle_start(message: types.Message):
     tg_lang = message.from_user.language_code 
     if tg_lang:
         if tg_lang.startswith('pl'): user_lang = "PL"
-        elif tg_lang.startswith('uk'): user_lang = "UK"
+        elif tg_lang.startswith('uk'): user_lang = "UKR"
         elif tg_lang.startswith('en'): user_lang = "EN"
         else: user_lang = "RUS" 
     else:
@@ -105,7 +105,7 @@ async def handle_start(message: types.Message):
             [
                 InlineKeyboardButton(text="🇵🇱 PL", callback_data="lang_PL"),
                 InlineKeyboardButton(text="🇷🇺 RU", callback_data="lang_RUS"),
-                InlineKeyboardButton(text="🇺🇦 UK", callback_data="lang_UK")
+                InlineKeyboardButton(text="🇺🇦 UK", callback_data="lang_UKR")
             ]
         ]
     )
@@ -146,6 +146,11 @@ async def process_lang_selection(callback: types.CallbackQuery):
         menu_button=MenuButtonWebApp(text=t["menu_btn"], web_app=WebAppInfo(url=dyn_url))
     )
     
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+
     await callback.message.answer(
         text=t["set_ok"],
         parse_mode="Markdown",

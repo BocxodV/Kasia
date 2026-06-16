@@ -472,6 +472,18 @@ async def web_app_handler(message: types.Message):
             reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
             await message.answer(text, reply_markup=reply_markup, parse_mode="Markdown")
 
+        elif data.get("action") == "feedback":
+            text = data.get("text", "").strip()
+            if text:
+                from config import ADMIN_ID
+                user_info = f"От: {message.from_user.full_name} (@{message.from_user.username}, ID: {message.from_user.id})"
+                feedback_msg = f"📬 **НОВЫЙ ОТЗЫВ ИЗ WEBAPP**\n{user_info}\n\n{text}"
+                try:
+                    await message.bot.send_message(ADMIN_ID, feedback_msg, parse_mode="Markdown")
+                    await message.answer("✅ Спасибо! Твой отзыв успешно отправлен разработчику.")
+                except Exception as e:
+                    await message.answer("❌ Произошла ошибка при отправке отзыва. Пожалуйста, попробуй позже.")
+
     except Exception as e:
         logger.error(f"WebApp Error: {e}")
         t = TRANSLATIONS.get("RUS", TRANSLATIONS["RUS"])
