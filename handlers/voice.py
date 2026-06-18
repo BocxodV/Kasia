@@ -8,6 +8,7 @@ from aiogram import Router, F, types
 from config import GEMINI_API_KEY
 from database import get_user_profile, get_work_log_id, upsert_work_log
 from nbp_service import get_eur_rate
+from texts import TRANSLATIONS
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -37,7 +38,11 @@ eur_rate_tool = {
 
 @router.message(F.voice)
 async def handle_voice_shift(message: types.Message):
-    status_msg = await message.answer("🎧 Слушаю и анализирую...")
+    user_id = message.from_user.id
+    profile = await get_user_profile(user_id)
+    user_lang = profile.get("lang", "RUS")
+    t = TRANSLATIONS.get(user_lang, TRANSLATIONS["RUS"])
+    status_msg = await message.answer(t["voice_analyzing"])
     
     try:
         # Берем аудио прямо в оперативку
@@ -94,7 +99,7 @@ async def handle_voice_shift(message: types.Message):
             for call in response.function_calls:
                 if call.name == "get_eur_rate":
                     date_arg = call.args.get("date_str", today_str)
-                    await status_msg.edit_text(f"🌍 Кася обращается в Нацбанк за курсом на {date_arg}...")
+                    await status_msg.edit_text(t["voice_nbp_request"].format(date_arg=date_arg))
                     
                     # --- ШАГ 3: ВЫЗЫВАЕМ НАШ PYTHON-КОД ---
                     applied_nbp_rate = await get_eur_rate(date_arg)
@@ -111,7 +116,7 @@ async def handle_voice_shift(message: types.Message):
                     contents.append(response.candidates[0].content) 
                     contents.append(genai_types.Content(parts=[func_resp_part], role="user")) 
                     
-                    await status_msg.edit_text("🧠 Формирую финальный отчет...")
+                    await status_msg.edit_text(t["voice_finalizing"])
                     # Просим ИИ продолжить работу, имея на руках курс евро
                     response = await client.aio.models.generate_content(
                         model='gemini-3.5-flash',
@@ -179,20 +184,22 @@ async def handle_voice_shift(message: types.Message):
             hours_50, hours_100, is_trip_int, bonuses, gross, net, record[0] if record else None
         )
         
-        eur_text = f"🌍 Курс NBP: {applied_nbp_rate} zł\n" if applied_nbp_rate else ""
+        eur_text = t["voice_eur_text"].format(rate=applied_nbp_rate) if applied_nbp_rate else ""
         
         await status_msg.delete()
         await message.answer(
-            f"🎙 **Голосовой отчет принят!**\n\n"
-            f"📅 Дата: {formatted_date} ({day_of_week})\n"
-            f"📍 Локация: {location}\n"
-            f"🕒 Работа: {work_hours} ч. | 🚗 За рулем: {driving_hours} ч.\n"
-            f"💰 **На руки: {net:.2f} zł**\n"
-            f"{eur_text}\n"
-            f"✅ *Смена с учетом налогов и бонусов сохранена в базу!*",
+            t["voice_received"].format(
+                date=formatted_date,
+                day=day_of_week,
+                loc=location,
+                hours=work_hours,
+                drive=driving_hours,
+                net=net,
+                eur=eur_text
+            ),
             parse_mode="Markdown"
         )
         
     except Exception as e:
         logger.error(f"Voice Error: {e}", exc_info=True)
-        await status_msg.edit_text(f"⚠️ Ошибка расшифровки: {str(e)}")
+        await status_msg.edit_text(t["voice_error"].format(err=str(e)))

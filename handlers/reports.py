@@ -187,7 +187,7 @@ async def generate_boss_excel_report(target_user_id, target_month, bot: Bot):
     urlop_fill = PatternFill(start_color="FFE699", end_color="FFE699", fill_type="solid")
     l4_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
 
-    headers = t.get("excel_boss_headers", ["Data", "Dzień", "Status", "Obiekt", "Auto", "Trasa", "Suma h", "Jazda"])
+    headers = t.get("excel_boss_headers", ["Data", "Dzień", "Status", "Obiekt", "Auto", "Trasa", "Suma h", "Jazda", "50%", "100%"])
     ws.append(headers)
 
     for cell in ws[1]:
@@ -196,10 +196,11 @@ async def generate_boss_excel_report(target_user_id, target_month, bot: Bot):
         cell.alignment = center_aligned
 
     total_hours, total_drive_hours = 0.0, 0.0
+    total_50, total_100 = 0.0, 0.0
 
     for row in rows:
         excel_row = [
-            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]
         ]
         ws.append(excel_row)
 
@@ -217,11 +218,13 @@ async def generate_boss_excel_report(target_user_id, target_month, bot: Bot):
 
         total_hours += float(row[6] or 0)
         total_drive_hours += float(row[7] or 0)
+        total_50 += float(row[8] or 0)
+        total_100 += float(row[9] or 0)
 
     ws.append([]) 
 
     total_row = [
-        "", "", "", "", t["total_month"], "", round(total_hours, 1), round(total_drive_hours, 1)
+        "", "", "", "", t["total_month"], "", round(total_hours, 1), round(total_drive_hours, 1), round(total_50, 1), round(total_100, 1)
     ]
     ws.append(total_row)
 
@@ -231,8 +234,8 @@ async def generate_boss_excel_report(target_user_id, target_month, bot: Bot):
 
     ws.append([])
     last_row = ws.max_row + 1
-    ws.merge_cells(start_row=last_row, start_column=5, end_row=last_row, end_column=8)
-    sig_cell = ws.cell(row=last_row, column=5)
+    ws.merge_cells(start_row=last_row, start_column=7, end_row=last_row, end_column=10)
+    sig_cell = ws.cell(row=last_row, column=7)
     sig_cell.value = "© Created by bocxodv"
     sig_cell.font = Font(italic=True, size=9, color="A6A6A6")
     sig_cell.alignment = Alignment(horizontal="right", vertical="center")

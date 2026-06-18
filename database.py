@@ -75,6 +75,11 @@ async def init_db():
                 await db.execute(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col}")
             except Exception as e:
                 pass
+        
+        try:
+            await db.execute("ALTER TABLE work_logs ADD COLUMN IF NOT EXISTS is_abroad INTEGER DEFAULT 0")
+        except Exception:
+            pass
 
 async def get_user_profile(user_id):
     p = await get_pool()
@@ -146,7 +151,7 @@ async def get_work_logs_for_month(user_id, month_year):
     p = await get_pool()
     async with p.acquire() as db:
         return await db.fetch('''
-            SELECT log_date, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip, bonuses, gross, net
+            SELECT log_date, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip, bonuses, gross, net, is_abroad
             FROM work_logs
             WHERE user_id = $1 AND month_year = $2
             ORDER BY log_date ASC
@@ -174,20 +179,20 @@ async def get_work_log_id(user_id, log_date):
     async with p.acquire() as db:
         return await db.fetchrow('SELECT id FROM work_logs WHERE user_id = $1 AND log_date = $2', user_id, log_date)
 
-async def upsert_work_log(user_id, log_date, month_year, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip_int, bonuses, gross, net, record_id=None):
+async def upsert_work_log(user_id, log_date, month_year, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip_int, bonuses, gross, net, is_abroad_int=0, record_id=None):
     p = await get_pool()
     async with p.acquire() as db:
         if record_id:
             await db.execute('''
                 UPDATE work_logs
-                SET day_of_week=$1, status=$2, location=$3, car=$4, route=$5, work_hours=$6, driving_hours=$7, hours_50=$8, hours_100=$9, is_trip=$10, bonuses=$11, gross=$12, net=$13
-                WHERE id=$14
-            ''', day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip_int, bonuses, gross, net, record_id)
+                SET day_of_week=$1, status=$2, location=$3, car=$4, route=$5, work_hours=$6, driving_hours=$7, hours_50=$8, hours_100=$9, is_trip=$10, bonuses=$11, gross=$12, net=$13, is_abroad=$14
+                WHERE id=$15
+            ''', day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip_int, bonuses, gross, net, is_abroad_int, record_id)
         else:
             await db.execute('''
-                INSERT INTO work_logs (user_id, log_date, month_year, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip, bonuses, gross, net)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-            ''', user_id, log_date, month_year, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip_int, bonuses, gross, net)
+                INSERT INTO work_logs (user_id, log_date, month_year, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip, bonuses, gross, net, is_abroad)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+            ''', user_id, log_date, month_year, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip_int, bonuses, gross, net, is_abroad_int)
 
 async def get_available_months(user_id):
     p = await get_pool()

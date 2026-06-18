@@ -25,7 +25,7 @@ from database import (
     activate_user_premium, update_user_language,
     increment_shift_count, delete_work_log, get_work_logs_for_month,
     add_user_savings, get_analytics_by_location,
-    get_user_unique_records 
+    get_user_unique_records, get_work_log_id
 )
 from map_service import calculate_driving_hours, get_country_by_city
 
@@ -267,11 +267,14 @@ async def web_app_handler(message: types.Message):
                     bonuses = max(0, net - official_net)
                     cash_part = bonuses 
                 
+                record = await get_work_log_id(user_id, f_date)
+                record_id = record[0] if record else None
+                is_abroad_int = 1 if is_abroad_actual else 0
                 await upsert_work_log(
                     user_id, f_date, month_y, day_w, status, 
                     location, data.get("car",""), route, 
                     work_hours, driving_hours, hours_50, hours_100, 
-                    is_trip_for_db, bonuses, gross, net
+                    is_trip_for_db, bonuses, gross, net, is_abroad_int=is_abroad_int, record_id=record_id
                 )
                 
                 total_net += net
@@ -456,7 +459,79 @@ async def web_app_handler(message: types.Message):
                 parse_mode="Markdown"
             )
 
-        elif data.get("action") == "history":
+        elif data.get("action") == "history_view":
+            target_month = data.get("month")
+            logs = await get_work_logs_for_month(user_id, target_month)
+            if not logs:
+                await message.answer(t["hist_err"].format(month=target_month))
+                return
+            
+            total_work_hours = 0.0
+            total_driving_hours = 0.0
+            total_net = 0.0
+            
+            title_map = {
+                "RUS": "📋 **Просмотр смен за {month}**\n\n",
+                "UKR": "📋 **Перегляд змін за {month}**\n\n",
+                "PL": "📋 **Podgląd zmian w {month}**\n\n"
+            }
+            title = title_map.get(user_lang, title_map["RUS"]).format(month=target_month)
+            lines = [title]
+            
+            for log in logs:
+                log_date, day_of_week, status, location, car, route, work_hours, driving_hours, hours_50, hours_100, is_trip, bonuses, gross, net, *extra = log
+                
+                work_hours_f = float(work_hours or 0)
+                driving_hours_f = float(driving_hours or 0)
+                net_f = float(net or 0)
+                
+                total_work_hours += work_hours_f
+                total_driving_hours += driving_hours_f
+                total_net += net_f
+                
+                icon = "💼" if status == "Work" else "💊" if status == "L4" else "🌴"
+                status_desc = {
+                    "Work": {"RUS": "Работа", "UKR": "Робота", "PL": "Praca"},
+                    "L4": {"RUS": "Больничный (L4)", "UKR": "Лікарняний (L4)", "PL": "Zwolnienie (L4)"},
+                    "Urlop": {"RUS": "Отпуск", "UKR": "Відпустка", "PL": "Urlop"}
+                }.get(status, {"RUS": status, "UKR": status, "PL": status}).get(user_lang, status)
+                
+                day_short = day_of_week[:3] if day_of_week else ""
+                lines.append(f"📅 **{log_date} ({day_short})** — {icon} {status_desc}")
+                
+                if status == "Work":
+                    if location:
+                        loc_lbl = "Объект" if user_lang == "RUS" else "Об'єкт" if user_lang == "UKR" else "Obiekt"
+                        car_lbl = "Авто" if user_lang in ["RUS", "UKR"] else "Auto"
+                        lines.append(f"   📍 {loc_lbl}: {location}" + (f" | 🚛 {car_lbl}: {car}" if car else ""))
+                    
+                    if work_hours_f > 0 or driving_hours_f > 0:
+                        h_lbl = "ч." if user_lang == "RUS" else "год" if user_lang == "UKR" else "h"
+                        lines.append(f"   ⏱ На объекте: {work_hours_f:g} {h_lbl} | 🚗 За рулем: {driving_hours_f:g} {h_lbl}")
+                        
+                    if route:
+                        r_lbl = "Маршрут" if user_lang in ["RUS", "UKR"] else "Trasa"
+                        lines.append(f"   🛣 {r_lbl}: {route}")
+                
+                net_lbl = "Чистыми" if user_lang == "RUS" else "Чистими" if user_lang == "UKR" else "Netto"
+                lines.append(f"   💰 {net_lbl}: **{net_f:.2f} zł**")
+                lines.append("   ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈")
+            
+            tot_lbl = "ИТОГО" if user_lang == "RUS" else "ВСОГО" if user_lang == "UKR" else "RAZEM"
+            w_tot_lbl = "На объекте" if user_lang == "RUS" else "На об'єкті" if user_lang == "UKR" else "Na obiekcie"
+            d_tot_lbl = "За рулем" if user_lang == "RUS" else "За кермом" if user_lang == "UKR" else "Za kierownicą"
+            n_tot_lbl = "Заработано" if user_lang == "RUS" else "Зароблено" if user_lang == "UKR" else "Zarobiono"
+            h_lbl = "ч." if user_lang == "RUS" else "год" if user_lang == "UKR" else "h"
+            
+            lines.append(f"\n📊 **{tot_lbl}:**")
+            lines.append(f"⏱ {w_tot_lbl}: **{total_work_hours:g} {h_lbl}**")
+            lines.append(f"🚗 {d_tot_lbl}: **{total_driving_hours:g} {h_lbl}**")
+            lines.append(f"💵 {n_tot_lbl}: **{total_net:.2f} zł**")
+            
+            final_text = "\n".join(lines)
+            await message.answer(final_text, parse_mode="Markdown")
+
+        elif data.get("action") in ["history", "history_edit"]:
             target_month = data.get("month")
             logs = await get_work_logs_for_month(user_id, target_month)
             if not logs:
@@ -464,11 +539,35 @@ async def web_app_handler(message: types.Message):
                 return
             text = t["hist_ok"].format(month=target_month)
             keyboard = []
+            profile = await get_user_profile(user_id)
             for log in logs:
-                date_str, status, net = log[0], log[2], log[13]     
+                date_str, status, net = log[0], log[2], log[13]
+                is_abroad_val = log[14] if len(log) > 14 else 0
+                
+                # Format to YYYY-MM-DD for HTML date input
+                dt = datetime.strptime(date_str, "%d.%m.%Y")
+                edate = dt.strftime("%Y-%m-%d")
+                
+                # build edit_url
+                base_url = await build_app_url(user_id, profile)
+                eobj = urllib.parse.quote(log[3] or "")
+                ecar = urllib.parse.quote(log[4] or "")
+                eroute = urllib.parse.quote(log[5] or "")
+                work_hours = log[6] or 0.0
+                driving_hours = log[7] or 0.0
+                is_trip = log[10] or 0
+                
+                edit_params = f"&edit=true&edate={edate}&estatus={status}&ehours={work_hours:g}&edrive={driving_hours:g}&eobj={eobj}&ecar={ecar}&eroute={eroute}&eabroad={is_abroad_val}&ediet={is_trip}"
+                edit_url = base_url + edit_params
+                
                 icon = "💼" if status == "Work" else "💊" if status == "L4" else "🌴"
-                btn_text = f"❌ {date_str} ({icon} {net:.2f} zł)"
-                keyboard.append([InlineKeyboardButton(text=btn_text, callback_data=f"del_log_{date_str}")])
+                btn_del_text = f"❌ {date_str} ({icon} {net:.2f} zł)"
+                btn_edit_text = t.get("btn_edit_log", "✏️ Изменить")
+                
+                keyboard.append([
+                    InlineKeyboardButton(text=btn_del_text, callback_data=f"del_log_{date_str}"),
+                    InlineKeyboardButton(text=btn_edit_text, web_app=WebAppInfo(url=edit_url))
+                ])
             reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
             await message.answer(text, reply_markup=reply_markup, parse_mode="Markdown")
 

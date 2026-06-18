@@ -5,7 +5,8 @@ from google.genai import types as genai_types
 from aiogram import Router, F, types
 
 from config import GEMINI_API_KEY
-from database import update_user_setting
+from database import update_user_setting, get_user_profile
+from texts import TRANSLATIONS
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -37,7 +38,12 @@ async def process_image_bytes(image_bytes: bytes) -> dict:
 # 2. Оставляем классический обработчик для чата (на всякий случай)
 @router.message(F.photo)
 async def handle_car_photo(message: types.Message):
-    status_msg = await message.answer("👁 Изучаю фото...")
+    user_id = message.from_user.id
+    profile = await get_user_profile(user_id)
+    user_lang = profile.get("lang", "RUS")
+    t = TRANSLATIONS.get(user_lang, TRANSLATIONS["RUS"])
+
+    status_msg = await message.answer(t["vision_analyzing"])
     try:
         photo = message.photo[-1]
         file_info = await message.bot.get_file(photo.file_id)
@@ -48,17 +54,17 @@ async def handle_car_photo(message: types.Message):
         car, plate = data.get("car", "").strip(), data.get("plate", "").strip()
         
         if not car and not plate:
-            await status_msg.edit_text("🤷‍♂️ Не смог распознать машину или номер. Попробуй другой ракурс!")
+            await status_msg.edit_text(t["vision_not_recognized"])
             return
             
         final_car_string = f"{car} {plate}".strip()
-        await update_user_setting(message.from_user.id, "default_car", final_car_string)
+        await update_user_setting(user_id, "default_car", final_car_string)
 
         await status_msg.delete()
         await message.answer(
-            f"🚗 **Машина успешно распознана!**\n\n**Авто:** {car}\n**Номер:** {plate}\n\n✅ Сохранено в Гараж.", 
+            t["vision_recognized"].format(car=car, plate=plate), 
             parse_mode="Markdown"
         )
     except Exception as e:
         logger.error(f"Vision Error: {e}")
-        await status_msg.edit_text(f"⚠️ Ошибка при анализе фото: {str(e)}")
+        await status_msg.edit_text(t["vision_error"].format(err=str(e)))

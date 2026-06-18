@@ -3,7 +3,7 @@ import { tg, initTelegram } from './core/telegram.js';
 import { state, TRANSLATIONS } from './core/state.js';
 import { openTab, setupSwipes, updatePolaroid } from './modules/tabs.js';
 import { triggerCarScan } from './modules/camera.js';
-import { sendShift, sendReportReq, sendBossReportReq, sendHistoryReq, sendAnalyticsReq, sendSettings, sendAuditReq, openGoogleMaps, sendFeedback } from './modules/api.js';
+import { sendShift, sendReportReq, sendBossReportReq, sendHistoryReq, sendHistoryEditReq, sendAnalyticsReq, sendSettings, sendAuditReq, openGoogleMaps, sendFeedback } from './modules/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initTelegram();
@@ -29,13 +29,21 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let key in t) {
                 let el = document.getElementById(key);
                 if (el) {
-                    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'number')) {
+                    if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && (el.type === 'text' || el.type === 'number' || el.tagName === 'TEXTAREA')) {
                         el.placeholder = t[key];
-                    } else if (el.tagName !== 'INPUT') {
-                        el.innerText = t[key];
+                    } else if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') {
+                        if (key === "btn_send_shift" && urlParams.get("edit") === "true") {
+                            el.innerText = t.btn_save_shift || t.btn_send_shift;
+                        } else {
+                            el.innerText = t[key];
+                        }
                     }
                 }
             }
+            // Dynamic translation of help-link elements
+            document.querySelectorAll('[id^="l_how_it_works_"]').forEach(el => {
+                el.innerText = t.l_how_it_works || "Как это работает?";
+            });
             document.getElementById("langInput").value = lang;
             let goalInput = document.getElementById("goalNameInput");
             let customGoalName = goalInput ? goalInput.value : "";
@@ -84,6 +92,53 @@ document.addEventListener('DOMContentLoaded', () => {
         if(pb) pb.style.width = state.percent + "%"; 
     }, 300);
 
+    // --- ПРЕДЗАПОЛНЕНИЕ ДЛЯ РЕДАКТИРОВАНИЯ ---
+    if (urlParams.get("edit") === "true") {
+        const edate = urlParams.get("edate");
+        const estatus = urlParams.get("estatus");
+        const eobj = urlParams.get("eobj");
+        const ehours = urlParams.get("ehours");
+        const edrive = urlParams.get("edrive");
+        const ecar = urlParams.get("ecar");
+        const eroute = urlParams.get("eroute");
+        const eabroad = urlParams.get("eabroad") === "1" || urlParams.get("eabroad") === "true";
+        const ediet = urlParams.get("ediet") === "1" || urlParams.get("ediet") === "true";
+
+        if (edate) document.getElementById("dateInput").value = edate;
+        if (estatus) {
+            const statusEl = document.getElementById("statusInput");
+            statusEl.value = estatus;
+            document.getElementById("endDateRow").style.display = (estatus === "L4" || estatus === "Urlop") ? "flex" : "none";
+        }
+        if (eobj) document.getElementById("objectInput").value = eobj;
+        if (ehours) document.getElementById("hoursInput").value = ehours;
+        if (edrive) document.getElementById("driveInput").value = edrive;
+        if (ecar) {
+            document.getElementById("carInput").value = ecar;
+            document.getElementById("garageCarInput").value = ecar;
+        }
+        if (eroute) {
+            document.getElementById("routeInput").value = eroute;
+            if (eroute.includes(" - ")) {
+                let parts = eroute.split(" - ");
+                if (document.getElementById("routeFrom")) document.getElementById("routeFrom").value = parts[0] || "";
+                if (document.getElementById("routeTo")) document.getElementById("routeTo").value = parts[1] || "";
+            }
+        }
+        document.getElementById("abroadInput").checked = eabroad;
+        document.getElementById("dietInput").checked = ediet;
+
+        // Блокируем изменение даты при редактировании
+        document.getElementById("dateInput").disabled = true;
+
+        // Меняем текст кнопки отправки на "Сохранить изменения"
+        const t = TRANSLATIONS[state.currentLang] || TRANSLATIONS["RUS"];
+        const btn = document.getElementById("btn_send_shift");
+        if (btn) {
+            btn.innerText = t.btn_save_shift || "Сохранить изменения";
+        }
+    }
+
     function populateDatalist(listId, dataString) {
         const list = document.getElementById(listId);
         if (!list || !dataString) return;
@@ -104,7 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const garageCarInput = document.getElementById("garageCarInput");
     if (mainCarInput && garageCarInput) {
         mainCarInput.addEventListener("input", (e) => { garageCarInput.value = e.target.value; });
+        mainCarInput.addEventListener("change", (e) => { garageCarInput.value = e.target.value; });
         garageCarInput.addEventListener("input", (e) => { mainCarInput.value = e.target.value; });
+        garageCarInput.addEventListener("change", (e) => { mainCarInput.value = e.target.value; });
     }
 
     document.getElementById("statusInput").addEventListener("change", function () {
@@ -143,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.sendReportReq = sendReportReq;
     window.sendBossReportReq = sendBossReportReq;
     window.sendHistoryReq = sendHistoryReq;
+    window.sendHistoryEditReq = sendHistoryEditReq;
     window.sendAnalyticsReq = sendAnalyticsReq;
     window.sendSettings = sendSettings;
     window.sendAuditReq = sendAuditReq;

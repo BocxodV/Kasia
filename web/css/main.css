@@ -275,6 +275,23 @@ input[type="checkbox"] {
     text-decoration: none;
 }
 
+.help-link {
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--hint-ink, #7f8c8d);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    cursor: pointer;
+    margin-left: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    transition: color 0.2s ease;
+}
+
+.help-link:hover {
+    color: var(--highlight-orange, #ffb347);
+}
+
 .modal {
     display: none; 
     position: fixed; 

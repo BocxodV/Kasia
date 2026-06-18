@@ -34,7 +34,12 @@ export function sendBossReportReq() {
 }
 
 export function sendHistoryReq() { 
-    tg.sendData(JSON.stringify({ action: "history", month: document.getElementById("historyMonth").value.split("-").reverse().join(".") })); 
+    tg.sendData(JSON.stringify({ action: "history_view", month: document.getElementById("historyMonth").value.split("-").reverse().join(".") })); 
+    tg.close(); 
+}
+
+export function sendHistoryEditReq() { 
+    tg.sendData(JSON.stringify({ action: "history_edit", month: document.getElementById("historyMonth").value.split("-").reverse().join(".") })); 
     tg.close(); 
 }
 
@@ -73,7 +78,7 @@ export function openGoogleMaps() {
     const from = document.getElementById("routeFrom").value.trim();
     const to = document.getElementById("routeTo").value.trim();
     if (!to) {
-        tg.showAlert("⚠️ Кася просит указать хотя бы точку назначения (Куда)!");
+        tg.showAlert(TRANSLATIONS[state.currentLang].alert_route_to_required || "⚠️ Кася просит указать хотя бы точку назначения (Куда)!");
         return;
     }
     let mapsUrl = "https://www.google.com/maps/dir/?api=1";

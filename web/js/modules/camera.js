@@ -1,5 +1,6 @@
 // js/modules/camera.js
 import { tg } from '../core/telegram.js';
+import { state, TRANSLATIONS } from '../core/state.js';
 
 let videoStream = null;
 
@@ -28,11 +29,11 @@ export async function triggerCarScan() {
 
             container.style.display = "block"; 
             
-            scanBtn.innerText = "🔴 Сделать снимок!";
+            scanBtn.innerText = TRANSLATIONS[state.currentLang].btn_scan_take_photo || "🔴 Сделать снимок!";
             scanBtn.style.backgroundColor = "#ff7675"; 
         } catch (err) {
             console.error("Camera access denied:", err);
-            tg.showAlert("⚠️ Ошибка: нет доступа к камере. Разреши Telegram использовать камеру в настройках телефона!");
+            tg.showAlert(TRANSLATIONS[state.currentLang].camera_no_access || "⚠️ Ошибка: нет доступа к камере. Разреши Telegram использовать камеру в настройках телефона!");
         }
     } 
     // СЦЕНАРИЙ 2: КАМЕРА УЖЕ РАБОТАЕТ -> ДЕЛАЕМ СНИМОК И ОТПРАВЛЯЕМ
@@ -47,7 +48,7 @@ export async function triggerCarScan() {
         videoStream = null;
         container.style.display = "none"; 
         
-        scanBtn.innerText = "Кася думает... 🧠";
+        scanBtn.innerText = TRANSLATIONS[state.currentLang].kasia_thinking || "Кася думает... 🧠";
         scanBtn.style.backgroundColor = "var(--highlight-green)"; 
         scanBtn.disabled = true;
 
@@ -72,20 +73,28 @@ export async function triggerCarScan() {
                         const plateNumber = result.plate || "";
                         const fullCarString = `${carName} ${plateNumber}`.trim();
                         
-                        // Вставляем полную строку в оба поля
-                        if (garageCarInput) garageCarInput.value = fullCarString;
-                        if (mainCarInput) mainCarInput.value = fullCarString;
+                        // Вставляем полную строку в оба поля и генерируем события для их синхронизации
+                        if (garageCarInput) {
+                            garageCarInput.value = fullCarString;
+                            garageCarInput.dispatchEvent(new Event('input'));
+                            garageCarInput.dispatchEvent(new Event('change'));
+                        }
+                        if (mainCarInput) {
+                            mainCarInput.value = fullCarString;
+                            mainCarInput.dispatchEvent(new Event('input'));
+                            mainCarInput.dispatchEvent(new Event('change'));
+                        }
                         
-                        tg.showAlert(`✅ Распознано: ${fullCarString}`);
+                        tg.showAlert((TRANSLATIONS[state.currentLang].scan_recognized || "✅ Распознано: ") + fullCarString);
                     }
                 } else {
-                    tg.showAlert("❌ Ошибка сервера (пока не подключен ИИ).");
+                    tg.showAlert(TRANSLATIONS[state.currentLang].scan_server_err || "❌ Ошибка сервера (пока не подключен ИИ).");
                 }
             } catch (error) {
                 console.error("Scan error:", error);
-                tg.showAlert("⚠️ Бэкенд с ИИ пока не подключен, но фото успешно сделано!");
+                tg.showAlert(TRANSLATIONS[state.currentLang].scan_backend_offline || "⚠️ Бэкенд с ИИ пока не подключен, но фото успешно сделано!");
             } finally {
-                scanBtn.innerText = "📸 Включить сканер";
+                scanBtn.innerText = TRANSLATIONS[state.currentLang].btn_scan_car || "📸 Включить сканер";
                 scanBtn.disabled = false;
             }
         }, 'image/jpeg', 0.85); 
