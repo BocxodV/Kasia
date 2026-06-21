@@ -6,6 +6,7 @@ from database import (
     get_work_log_id,
     upsert_work_log
 )
+from nbp_service import get_eur_rate
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,8 @@ async def save_shift_to_db(state: AgentState) -> dict:
     route = parsed_data.get("route") or ""
     is_trip = parsed_data.get("is_trip") or False
     is_trip_int = 1 if is_trip else 0
+    is_abroad = bool(parsed_data.get("is_abroad") or False)
+    is_abroad_int = 1 if is_abroad else 0
 
     # Parse and format the date
     if not date_str:
@@ -83,6 +86,16 @@ async def save_shift_to_db(state: AgentState) -> dict:
         tax_coeff = float(profile.get("tax_coeff") or 0.71)
         diet_value = float(profile.get("diet_value") or 45.0)
 
+        # Apply EUR rate if working abroad
+        applied_nbp_rate = await get_eur_rate(date_str) if is_abroad else None
+        if is_abroad and applied_nbp_rate:
+            rate_eur = float(profile.get("rate_eur") or 0.0)
+            rate_drive_eur = float(profile.get("rate_drive_eur") or 0.0)
+            if rate_eur > 0:
+                extra_rate = rate_eur * applied_nbp_rate
+            if rate_drive_eur > 0:
+                rate_drive = rate_drive_eur * applied_nbp_rate
+
         # Calculate gross and net pay
         gross = (
             (normal_hours * base_rate) +
@@ -128,6 +141,7 @@ async def save_shift_to_db(state: AgentState) -> dict:
         bonuses=bonuses,
         gross=gross,
         net=net,
+        is_abroad_int=is_abroad_int,
         record_id=record_id
     )
 
