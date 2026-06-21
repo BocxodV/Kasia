@@ -8,17 +8,17 @@ from database import get_system_stats, get_all_users, get_user_profile
 
 router = Router()
 
-# Получаем твой личный Telegram ID из переменных окружения Cloud Run
-# Если переменной нет, ставим 0 (никто не получит доступ)
+# Retrieve the admin's Telegram ID from environment variables
+# Fallback to 0 if not configured (denies access by default)
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
 @router.message(Command("admin", "boss", "stat"))
 async def commander_panel(message: types.Message):
-    # Секретная проверка: если ID не совпадает, бот просто игнорирует сообщение
+    # Restrict access to the verified admin user ID
     if message.from_user.id != ADMIN_ID:
         return 
         
-    # Запрашиваем цифры из базы данных
+    # Fetch system statistics from the database
     stats = await get_system_stats()
     
     text = (
@@ -69,7 +69,7 @@ async def cmd_broadcast(message: types.Message):
     except:
         pass
 
-    # Парсинг тегов [RUS], [PL], [UKR]
+    # Parse tag-based multilingual messages: [RUS], [PL], [UKR]
     parsed_data = {}
     if not is_json:
         current_lang = None
@@ -85,7 +85,7 @@ async def cmd_broadcast(message: types.Message):
             if current_lang is not None:
                 parsed_data[current_lang].append(line)
         
-        # Объединяем строки для каждого языка
+        # Combine lines for each parsed language
         for k in parsed_data:
             parsed_data[k] = "\n".join(parsed_data[k]).strip()
 
@@ -110,7 +110,7 @@ async def cmd_broadcast(message: types.Message):
             if msg_text:
                 await message.bot.send_message(user_id, msg_text)
                 count += 1
-                await asyncio.sleep(0.05) # Защита от лимитов Telegram (max 20-30 сообщений в сек)
+                await asyncio.sleep(0.05) # Prevent triggering Telegram rate limits (max 30 messages per second)
         except (TelegramForbiddenError, TelegramAPIError) as e:
             blocked_count += 1
         except Exception:

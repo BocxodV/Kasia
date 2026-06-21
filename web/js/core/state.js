@@ -1,6 +1,6 @@
 // js/core/state.js
 
-// 1. Глобальные переменные нашего приложения
+// 1. Global application state properties
 export const state = {
     currentLang: "RUS",
     percent: 0,
@@ -8,7 +8,7 @@ export const state = {
     cSav: 0
 };
 
-// 2. Объект с переводами
+// 2. Localization translations dictionary
 export const TRANSLATIONS = {
     RUS: {
     t_work_data: "Данные о работе", l_date: "📅 Дата", l_status: "📌 Статус",

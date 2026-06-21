@@ -14,7 +14,7 @@ from aiogram.types import (
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-# Подтягиваем локальный словарь мотиваций вместо API Gemini
+# Import local motivational content instead of calling external models
 from texts import TRANSLATIONS, get_random_motivation
 from keyboards import get_support_keyboard 
 from nbp_service import get_eur_rate
@@ -29,7 +29,7 @@ from database import (
 )
 from map_service import calculate_driving_hours, get_country_by_city
 
-# ВОТ ЭТА СТРОКА УБЕРЕТ ЖЕЛТОЕ ПОДЧЕРКИВАНИЕ:
+# Import report functions
 from handlers.reports import generate_excel_report
 
 router = Router()
@@ -168,7 +168,7 @@ async def web_app_handler(message: types.Message):
                         parse_mode="Markdown"
                     )
                 except Exception as e:
-                    logger.error(f"Не удалось отправить фото нового объекта: {e}")
+                    logger.error(f"Failed to send new object notification photo: {e}")
 
             if car and car not in history.get("cars", []):
                 from aiogram.types import FSInputFile
@@ -179,7 +179,7 @@ async def web_app_handler(message: types.Message):
                         parse_mode="Markdown"
                     )
                 except Exception as e:
-                    logger.error(f"Не удалось отправить фото гаража: {e}")
+                    logger.error(f"Failed to send garage registration photo: {e}")
             
             dates_to_process = [start_date]
             if status in ["L4", "Urlop"] and end_date_str:
@@ -208,7 +208,7 @@ async def web_app_handler(message: types.Message):
             total_net, total_gross, total_loss, total_cash_diff = 0, 0, 0, 0
             ai_advice = ""
             
-            # === СТРОГО ТВОЯ МАТЕМАТИКА ===
+            # === DETAILED WAGE AND TAX COMPUTATIONS ===
             applied_nbp_rate = await get_eur_rate(data.get("date")) if is_abroad_actual else None
             is_trip_int = 1 if data.get("is_trip") else 0
             eff_rate = profile.get("extra_rate", 0)
@@ -301,7 +301,7 @@ async def web_app_handler(message: types.Message):
             if user_lang == "PL": day_name = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"][day_idx]
             elif user_lang == "UKR": day_name = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"][day_idx]
 
-            # ПОЛУЧАЕМ ЦИТАТУ ЛОКАЛЬНО
+            # Retrieve localized motivational quote locally
             motivation_text = get_random_motivation(user_lang)
 
             tax_coeff_val = profile.get("tax_coeff", 0.71)

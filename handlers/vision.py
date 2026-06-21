@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-# 1. ВЫДЕЛЯЕМ ИИ В ОТДЕЛЬНУЮ ФУНКЦИЮ (для Web App)
+# Core image processing helper function (available for WebApp integration)
 async def process_image_bytes(image_bytes: bytes) -> dict:
     prompt = """
     Ты - умный парсер автомобильных данных. Посмотри на это фото.
@@ -35,7 +35,7 @@ async def process_image_bytes(image_bytes: bytes) -> dict:
     )
     return json.loads(response.text)
 
-# 2. Оставляем классический обработчик для чата (на всякий случай)
+# Telegram message handler for photo messages
 @router.message(F.photo)
 async def handle_car_photo(message: types.Message):
     user_id = message.from_user.id

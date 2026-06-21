@@ -9,11 +9,11 @@ export async function triggerCarScan() {
     const container = document.getElementById('cameraContainer');
     const scanBtn = document.getElementById('btn_scan_car');
     
-    // Элементы для вставки результата
+    // Document elements for inserting parsing results
     const mainCarInput = document.getElementById("carInput");
     const garageCarInput = document.getElementById("garageCarInput");
 
-    // СЦЕНАРИЙ 1: КАМЕРА ВЫКЛЮЧЕНА -> ВКЛЮЧАЕМ ЕЕ
+    // Scenario 1: Camera stream is not active -> Initialize and start video capture
     if (!videoStream) {
         try {
             videoStream = await navigator.mediaDevices.getUserMedia({
@@ -24,7 +24,7 @@ export async function triggerCarScan() {
             video.srcObject = videoStream;
             
             video.onloadedmetadata = () => {
-                video.play().catch(e => console.error("Ошибка запуска видео:", e));
+                video.play().catch(e => console.error("Error starting video capture stream:", e));
             };
 
             container.style.display = "block"; 
@@ -36,7 +36,7 @@ export async function triggerCarScan() {
             tg.showAlert(TRANSLATIONS[state.currentLang].camera_no_access || "⚠️ Ошибка: нет доступа к камере. Разреши Telegram использовать камеру в настройках телефона!");
         }
     } 
-    // СЦЕНАРИЙ 2: КАМЕРА УЖЕ РАБОТАЕТ -> ДЕЛАЕМ СНИМОК И ОТПРАВЛЯЕМ
+    // Scenario 2: Camera stream is active -> Capture snapshot and upload
     else {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -59,21 +59,21 @@ export async function triggerCarScan() {
             formData.append("initData", tg.initData || "");
 
             try {
-                // Прямой вызов нашего API-шлюза на Cloud Run
+                // Trigger direct API request to Cloud Run gateway
                 const backendUrl = "https://e-ksiegowa-254558688282.europe-central2.run.app/api/scan-car";
                 const response = await fetch(backendUrl, { method: "POST", body: formData });
                 
                 if (response.ok) {
                     const result = await response.json();
                     
-                    // Проверяем, есть ли хоть что-то (машина ИЛИ номер)
+                    // Verify if at least one parameter was successfully parsed
                     if (result && (result.car || result.plate)) {
-                        // Склеиваем всё в одну строку
+                        // Concatenate brand and license plate into a unified identifier
                         const carName = result.car || "";
                         const plateNumber = result.plate || "";
                         const fullCarString = `${carName} ${plateNumber}`.trim();
                         
-                        // Вставляем полную строку в оба поля и генерируем события для их синхронизации
+                        // Bind the unified string to UI inputs and trigger event dispatchers
                         if (garageCarInput) {
                             garageCarInput.value = fullCarString;
                             garageCarInput.dispatchEvent(new Event('input'));

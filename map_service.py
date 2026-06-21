@@ -16,7 +16,7 @@ async def get_coordinates(city_name: str):
                     if data:
                         return float(data[0]["lon"]), float(data[0]["lat"])
         except Exception as e:
-            logger.error(f"Ошибка геокодирования: {e}")
+            logger.error(f"Geocoding error: {e}")
     return None, None
 
 async def calculate_driving_hours(route: str) -> float:
@@ -35,7 +35,7 @@ async def calculate_driving_hours(route: str) -> float:
                     if data.get("code") == "Ok":
                         return round((data["routes"][0]["duration"] / 3600) * 2) / 2
     except Exception as e:
-        logger.error(f"Ошибка навигации: {e}")
+        logger.error(f"Navigation routing error: {e}")
     return 0.0
 
 async def get_country_by_city(city_name: str) -> str:
@@ -51,5 +51,5 @@ async def get_country_by_city(city_name: str) -> str:
                     data = await response.json()
                     if data: return data[0].get("address", {}).get("country_code", "").upper()
     except Exception as e:
-        logger.error(f"Ошибка Гео-API: {e}")
+        logger.error(f"Geo API country lookup error: {e}")
     return "PL"

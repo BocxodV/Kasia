@@ -16,11 +16,11 @@ from aiogram.types import (
 )
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-# === НОВЫЕ ИМПОРТЫ ДЛЯ WEBHOOK ===
+# === WEBHOOK IMPORTS ===
 from aiohttp import web
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-# === НАСТРОЙКА ЛОГИРОВАНИЯ ===
+# === LOGGING CONFIGURATION ===
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 from texts import TRANSLATIONS
 from keyboards import get_main_keyboard
 
-# Импорт асинхронных функций БД (ИСПОЛНЕНО: добавлено update_user_setting)
+# Import asynchronous database functions
 from database import (
     init_db, get_user_profile, update_user_language, 
     update_last_location, get_users_for_audit, get_all_users, update_user_setting
@@ -39,14 +39,14 @@ from database import (
 
 from handlers import admin, webapp, reports, vision, voice, feedback
 from handlers.webapp import build_app_url
-from handlers.vision import process_image_bytes # Подтягиваем ИИ-парсер
+from handlers.vision import process_image_bytes # Import image parsing capability
 
 from config import BOT_TOKEN
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# === НАСТРОЙКИ WEBHOOK ===
+# === WEBHOOK CONFIGURATION ===
 WEBHOOK_PATH = "/webhook"
 webhook_base = os.getenv("WEBHOOK_URL", "").rstrip("/")
 WEBHOOK_URL = f"{webhook_base}{WEBHOOK_PATH}" if webhook_base else ""
@@ -66,14 +66,14 @@ def verify_telegram_web_app_data(init_data: str, bot_token: str) -> bool:
         return False
 
 
-# === 1. БАЗОВЫЕ ОБРАБОТЧИКИ (РЕГИСТРИРУЕМ ПЕРВЫМИ!) ===
+# === 1. BASE HANDLERS ===
 
 @dp.message(CommandStart())
 async def handle_start(message: types.Message):
     user_id = message.from_user.id
     profile = await get_user_profile(user_id)
     
-    # Авто-перехват языка
+    # Detect language from user profile or client settings
     tg_lang = message.from_user.language_code 
     if tg_lang:
         if tg_lang.startswith('pl'): user_lang = "PL"
@@ -99,7 +99,7 @@ async def handle_start(message: types.Message):
         resize_keyboard=True 
     )
     
-    # Создаем Inline-кнопки для выбора языка
+    # Create Inline buttons for language selection
     lang_kb = InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -163,7 +163,7 @@ async def silent_chat_member_update(update: types.ChatMemberUpdated):
     pass
 
 
-# === 2. ПОДКЛЮЧАЕМ РОУТЕРЫ ИЗ МОДУЛЕЙ ===
+# === 2. INCLUDE ROUTERS FROM MODULES ===
 dp.include_router(admin.router)
 dp.include_router(reports.router)
 dp.include_router(vision.router)
@@ -172,37 +172,37 @@ dp.include_router(feedback.router)
 dp.include_router(webapp.router) 
 
 
-# === 3. ЖИЗНЕННЫЙ ЦИКЛ ПРИЛОЖЕНИЯ И API-ШЛЮЗ ===
+# === 3. APPLICATION LIFECYCLE & API GATEWAY ===
 
 async def on_startup(bot: Bot):
-    logger.info("⏳ [ШАГ 1] Запуск on_startup. Подключаемся к базе...")
+    logger.info("⏳ [STEP 1] Starting on_startup. Connecting to database...")
     try:
         await init_db() 
-        logger.info("✅ [ШАГ 2] База данных успешно подключена!")
+        logger.info("✅ [STEP 2] Database successfully initialized!")
     except Exception as e:
-        logger.error(f"❌ Ошибка подключения к БД: {e}")
+        logger.error(f"❌ Error connecting to database: {e}")
     
-    logger.info("⏳ [ШАГ 3] Запуск планировщика задач...")
+    logger.info("⏳ [STEP 3] Starting task scheduler...")
     scheduler = AsyncIOScheduler(timezone="Europe/Warsaw")
     scheduler.start()
-    logger.info("✅ [ШАГ 4] Планировщик запущен!")
+    logger.info("✅ [STEP 4] Scheduler started!")
     
     if WEBHOOK_URL:
-        logger.info(f"⏳ [ШАГ 5] Отправляем запрос в Telegram: {WEBHOOK_URL}")
+        logger.info(f"⏳ [STEP 5] Setting webhook URL: {WEBHOOK_URL}")
         try:
             await bot.set_webhook(WEBHOOK_URL)
-            logger.info("✅ [ШАГ 6] Webhook успешно привязан!")
+            logger.info("✅ [STEP 6] Webhook successfully set!")
         except Exception as e:
-            logger.error(f"❌ Ошибка установки Webhook: {e}")
+            logger.error(f"❌ Error setting webhook: {e}")
     else:
-        logger.warning("⚠️ WEBHOOK_URL не задан! Бот не будет получать сообщения.")
+        logger.warning("⚠️ WEBHOOK_URL is not configured!")
 
 async def on_shutdown(bot: Bot):
-    logger.info("💤 Cloud Run уходит в спящий режим. Webhook активен, ждем сообщений...")
+    logger.info("💤 Web server shutting down. Webhook active, awaiting requests...")
 
-# === НАШ НОВЫЙ МОСТ ДЛЯ ФРОНТЕНДА (API-ШЛЮЗ) ===
+# === FRONTEND API GATEWAY BRIDGE ===
 async def api_scan_car(request):
-    # Разрешаем браузеру Vercel общаться с Cloud Run
+    # Allow Vercel frontend origin
     headers = {
         'Access-Control-Allow-Origin': 'https://e-ksiegowa.vercel.app',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -223,10 +223,10 @@ async def api_scan_car(request):
         if not photo:
             return web.json_response({"error": "No photo"}, status=400, headers=headers)
         
-        # Передаем байты в Gemini
+        # Parse image bytes
         result = await process_image_bytes(photo.file.read())
         
-        # Сохраняем тачку в базу по user_id
+        # Save parsed default vehicle to user profile
         car_str, plate_str = result.get("car", "").strip(), result.get("plate", "").strip()
         if user_id and str(user_id) != "unknown" and (car_str or plate_str):
             final_car_string = f"{car_str} {plate_str}".strip()
@@ -245,7 +245,7 @@ def main():
 
     app = web.Application()
 
-    # Регистрация маршрута для сканера Гаража
+    # Register route for garage scanner
     app.router.add_route('OPTIONS', '/api/scan-car', api_scan_car)
     app.router.add_post('/api/scan-car', api_scan_car)
 
@@ -258,7 +258,7 @@ def main():
     setup_application(app, dp, bot=bot)
 
     port = int(os.getenv("PORT", 8080))
-    logger.info(f"🚀 Запускаем веб-сервер на порту {port}...")
+    logger.info(f"🚀 Launching web server on port {port}...")
     web.run_app(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":

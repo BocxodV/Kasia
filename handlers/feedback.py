@@ -13,7 +13,7 @@ async def cmd_feedback(message: types.Message):
     user_lang = profile.get("lang", "RUS")
     t = TRANSLATIONS.get(user_lang, TRANSLATIONS["RUS"])
 
-    # Убираем саму команду из текста
+    # Strip the command prefix from the message text
     text = message.text.replace("/feedback", "").strip()
     
     if not text:

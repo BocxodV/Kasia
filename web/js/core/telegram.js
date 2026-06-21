@@ -1,14 +1,14 @@
 // js/core/telegram.js
 
-// Экспортируем объект tg, чтобы другие модули могли отправлять данные и вызывать алерты
+// Export the tg WebApp context to allow messaging and alerts
 export const tg = window.Telegram.WebApp;
 
-// Функция для первичной настройки приложения при старте
+// Initialize client application and expand container on load
 export function initTelegram() {
     tg.expand();
     tg.ready();
 
-    // Устанавливаем точную высоту от Telegram, чтобы контент не уходил за пределы экрана
+    // Calculate the exact viewport height dynamically to prevent scroll clipping
     function syncViewportHeight() {
         const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
         document.documentElement.style.setProperty('--tg-viewport-height', `${h}px`);

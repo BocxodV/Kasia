@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Глобальный пул соединений
+# Global connection pool for the PostgreSQL database
 pool = None
 
 async def get_pool():
@@ -15,7 +15,7 @@ async def get_pool():
     return pool
 
 async def init_db():
-    """Создает таблицы и обновляет структуру при запуске в PostgreSQL."""
+    """Creates database tables and updates the schema on startup in PostgreSQL."""
     p = await get_pool()
     async with p.acquire() as db:
         await db.execute('''
@@ -54,7 +54,7 @@ async def init_db():
             )
         ''')
         
-        # Безопасное добавление колонок (PostgreSQL поддерживает IF NOT EXISTS)
+        # Safely add columns using IF NOT EXISTS syntax supported by PostgreSQL
         columns = [
             "language TEXT DEFAULT 'PL'",
             "last_location TEXT", 
@@ -275,9 +275,9 @@ async def get_user_unique_records(user_id: int):
         "locations": [row[0] for row in locations]
     }
 
-# НОВАЯ ФУНКЦИЯ ДЛЯ ПАНЕЛИ КОМАНДИРА
+# Admin metrics retrieval function
 async def get_system_stats():
-    """Возвращает общую статистику системы"""
+    """Retrieves high-level system statistics."""
     p = await get_pool()
     async with p.acquire() as db:
         users_count = await db.fetchval('SELECT COUNT(*) FROM users')

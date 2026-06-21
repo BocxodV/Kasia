@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSwipes();
     document.getElementById("dateInput").valueAsDate = new Date();
 
-    // --- ЛОГИКА ПЕРЕВОДОВ И ЦЕЛЕЙ ---
+    // --- Localization & Financial Goal Logics ---
     function updateMotivationText() {
         let t = TRANSLATIONS[state.currentLang] || TRANSLATIONS["RUS"];
         let motText = t.mot_start || "Вперед!";
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyLanguage(lang);
     }
 
-    // --- ЧТЕНИЕ ДАННЫХ ИЗ URL ---
+    // --- Parse parameters from URL query string ---
     const urlParams = new URLSearchParams(window.location.search);
     state.gTarget = parseFloat(urlParams.get("g_target")) || 8000;
     state.cSav = parseFloat(urlParams.get("c_sav")) || 0; 
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(pb) pb.style.width = state.percent + "%"; 
     }, 300);
 
-    // --- ПРЕДЗАПОЛНЕНИЕ ДЛЯ РЕДАКТИРОВАНИЯ ---
+    // --- Prepopulate form inputs for editing mode ---
     if (urlParams.get("edit") === "true") {
         const edate = urlParams.get("edate");
         const estatus = urlParams.get("estatus");
@@ -128,10 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("abroadInput").checked = eabroad;
         document.getElementById("dietInput").checked = ediet;
 
-        // Блокируем изменение даты при редактировании
+        // Disable changing date when editing an existing shift
         document.getElementById("dateInput").disabled = true;
 
-        // Меняем текст кнопки отправки на "Сохранить изменения"
+        // Change button text to indicate update mode
         const t = TRANSLATIONS[state.currentLang] || TRANSLATIONS["RUS"];
         const btn = document.getElementById("btn_send_shift");
         if (btn) {
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     populateDatalist('carsList', urlParams.get('cars') || "");
     populateDatalist('garageCarsList', urlParams.get('cars') || "");
 
-    // --- СИНХРОНИЗАЦИЯ МАШИН И ДАТ ---
+    // --- Synchronize vehicles and date properties ---
     const mainCarInput = document.getElementById("carInput");
     const garageCarInput = document.getElementById("garageCarInput");
     if (mainCarInput && garageCarInput) {
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("endDateRow").style.display = (this.value === "L4" || this.value === "Urlop") ? "flex" : "none";
     });
 
-    // --- СИНХРОНИЗАЦИЯ МАРШРУТА ---
+    // --- Synchronize route and destinations ---
     const routeFrom = document.getElementById("routeFrom");
     const routeTo = document.getElementById("routeTo");
     const mainRouteInput = document.getElementById("routeInput");
@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (routeFrom) routeFrom.addEventListener("input", syncRoute);
     if (routeTo) routeTo.addEventListener("input", syncRoute);
 
-    // --- ПРИВЯЗКА ФУНКЦИЙ К WINDOW (ЧТОБЫ РАБОТАЛ HTML ONCLICK) ---
+    // --- Bind handlers globally for HTML onclick listeners ---
     window.openTab = openTab;
     window.changeLanguage = changeLanguage;
     window.triggerCarScan = triggerCarScan;
@@ -230,6 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Запуск первой вкладки
+    // Open the default workspace tab
     openTab('shift');
 });

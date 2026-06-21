@@ -31,12 +31,12 @@ async def ask_report_month(message: types.Message):
 
 @router.callback_query(F.data.startswith("report_"))
 async def generate_excel_report(callback: types.CallbackQuery = None, target_user_id=None, target_month=None, bot: Bot = None):
-    # ПЕРЕХВАТЧИК: Отправляем уведомление пользователю, что начали работу
+    # Interceptor: Notify the user that processing has started
     if callback:
         user_id = callback.from_user.id
         selected_month = callback.data.split("_")[1]
         await callback.message.delete()
-        # Если ты используешь свое сообщение "⏳ Формирую отчет...", добавь его сюда!
+        # Optional placeholder for custom log message
         await callback.bot.send_chat_action(chat_id=callback.message.chat.id, action="upload_document")
     else:
         user_id = target_user_id
@@ -137,10 +137,10 @@ async def generate_excel_report(callback: types.CallbackQuery = None, target_use
         max_length = max((len(str(cell.value)) for cell in col if cell.value is not None), default=0)
         ws.column_dimensions[col[0].column_letter].width = (max_length * 1.25) + 3
 
-    # === ОБЛАЧНАЯ МАГИЯ: Сохраняем в оперативную память (RAM) ===
+    # Store the spreadsheet directly in RAM
     file_buffer = io.BytesIO()
     wb.save(file_buffer)
-    file_buffer.seek(0) # Перематываем "пленку" в начало файла
+    file_buffer.seek(0) # Rewind the buffer pointer to the beginning
     
     file_name = f"Zarobki_{selected_month}.xlsx"
     document = BufferedInputFile(file_buffer.read(), filename=file_name)
@@ -158,11 +158,10 @@ async def generate_excel_report(callback: types.CallbackQuery = None, target_use
             await bot.send_document(user_id, document, caption=caption_text, parse_mode="Markdown")
             
     except Exception as e:
-        print(f"Ошибка отправки отчета: {e}")
+        print(f"Error sending report: {e}")
         if callback:
             await callback.message.answer("⚠️ Ошибка обработки данных.")
-    # Больше никакого блока finally и os.remove! 
-    # Сборщик мусора Python сам очистит память.
+    # Garbage collection will automatically clean up the BytesIO buffer
 
 async def generate_boss_excel_report(target_user_id, target_month, bot: Bot):
     profile = await get_user_profile(target_user_id)
@@ -259,4 +258,4 @@ async def generate_boss_excel_report(target_user_id, target_month, bot: Bot):
     try:
         await bot.send_document(target_user_id, document, caption=caption_text, parse_mode="Markdown")
     except Exception as e:
-        print(f"Ошибка отправки отчета для шефа: {e}")
+        print(f"Failed to send boss report: {e}")

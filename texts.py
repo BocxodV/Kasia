@@ -47,7 +47,7 @@ TRANSLATIONS = {
         "overwork_msg": "{hours} ч. за смену — это мощно! Но не забывай про отдых и личные дела. Здоровье важнее переработок!",        
         "l4_loss_msg": "**ИИ-Аналитика:** Здоровье важнее денег! Но для справки: больничный ({count} дн.) стоил тебе потери около **{loss} zł** чистыми.",
         
-        # --- НОВЫЕ КЛЮЧИ ---
+        # --- NEW KEYS ---
         "menu_btn": "📱 Панель",
         "menu_msg": "⚡️ Интерактивная панель теперь всегда доступна по кнопке меню слева от поля ввода!",
         "welcome_text": "👋 Привет! Я Кася — твой умный ИИ-помощник по учету работы и зарплаты в Польше! 👩‍💼\n\nС моей помощью ты сможешь легко:\n1️⃣ Вести точный учет рабочих смен, часов на объекте и времени за рулем ⏱\n2️⃣ Контролировать расчеты официальной зарплаты (нетто/брутто), больничных (L4) и отпусков 🌴\n3️⃣ Управлять командировочными (диетами) с автопереводом валют по курсу NBP 💶\n4️⃣ Накапливать средства в виртуальной «копилке» и отслеживать движение к своей финансовой цели 🎯\n\n⚠️ **Юридический дисклеймер:**\nБот предоставляет исключительно математические расчеты и аналитические инструменты (Audyt wyrównania, Nierozliczone saldo) для самоконтроля. Пользователь несет полную личную ответственность за декларирование своих доходов и уплату налогов в соответствии с законодательством Республики Польша.\n\nЧтобы начать свой путь к финансовому порядку, нажми кнопку **«📱 Панель»** ниже! 👇",
@@ -113,7 +113,7 @@ TRANSLATIONS = {
         "overwork_msg": "{hours} год за зміну — це потужно! Але не забувай про відпочинок та особисті справи. Здоров'я важливіше!",        
         "l4_loss_msg": "**Штучний Інтелект:** Здоров'я дорожче за гроші! Але для довідки: цей лікарняний ({count} дн.) коштував тобі втрати близько **{loss} zł** чистими.",
         
-        # --- НОВЫЕ КЛЮЧИ ---
+        # --- NEW KEYS ---
         "menu_btn": "📱 Панель",
         "menu_msg": "⚡️ Інтерактивна панель тепер завжди доступна за кнопкою меню зліва від поля введення!",
         "welcome_text": "👋 Привіт! Я Кася — твій розумний ШІ-помічник з обліку роботи та зарплати в Польщі! 👩‍💼\n\nЗ моєю допомогою ти зможеш легко:\n1️⃣ Вести точний облік робочих змін, годин на об'єкті та часу за кермом ⏱\n2️⃣ Контролювати розрахунки офіційної зарплати (нетто/брутто), лікарняних (L4) та відпусток 🌴\n3️⃣ Керувати відрядженнями (дієтами) з автопереведенням валют за курсом NBP 💶\n4️⃣ Накопичувати кошти у віртуальній «скарбничці» та відстежувати рух до своєї фінансової цілі 🎯\n\n⚠️ **Юридичний дисклеймер:**\nБот надає виключно математичні розрахунки та аналітичні інструменти (Audyt wyrównania, Nierozliczone saldo) для самоконтроля. Користувач несе повну особисту ответственность за декларування своїх доходів та сплату податків відповідно до законодавства Республіки Польща.\n\nЩоб почати свій шлях до фінансового порядку, натисни кнопку **«📱 Панель»** нижче! 👇",
@@ -179,7 +179,7 @@ TRANSLATIONS = {
         "overwork_msg": "{hours}h na jednej zmianie to sporo! Pamiętaj o odpoczynku i życiu prywatnym. Zdrowie jest najważniejsze!",        
         "l4_loss_msg": "**AI-Asystent:** Zdrowie jest ważniejsze niż pieniądze! Ale informacyjnie: to L4 ({count} dni) kosztowało Cię ok. **{loss} zł** na czysto.",
         
-        # --- НОВЫЕ КЛЮЧИ ---
+        # --- NEW KEYS ---
         "menu_btn": "📱 Panel",
         "menu_msg": "⚡️ Interaktywny panel jest teraz zawsze dostępny pod przyciskiem menu po lewej stronie pola wprowadzania!",
         "welcome_text": "👋 Cześć! Jestem Kasia — Twój inteligentny asystent AI do rejestracji czasu pracy i wynagrodzeń w Polsce! 👩‍💼\n\nZe mną możesz łatwo:\n1️⃣ Prowadzić dokładną ewidencję zmian, godzin na obiekcie i czasu za kierownicą ⏱\n2️⃣ Kontrolować rozliczenia oficjalnego wynagrodzenia (netto/brutto), zwolnień (L4) i urlopów 🌴\n3️⃣ Zarządzać delegacjami (dietami) z automatycznym przeliczaniem walut według kursu NBP 💶\n4️⃣ Oszczędzać pieniądze w wirtualnej «skarbonce» i śledzić realizację swojego celu finansowego 🎯\n\n⚠️ **Zastrzeżenie prawne:**\nBot wykonuje wyłącznie obliczenia matematyczne oraz udostępnia narzędzia analityczne (Audyt wyrównania, Nierozliczone saldo) do samokontroli. Użytkownik ponosi pełną osobistą odpowiedzialność za zgłaszanie swoich dochodów i opłacanie podatków zgodnie z przepisami Rzeczypospolitej Polskiej.\n\nAby zacząć drogę do porządku finansowego, kliknij przycisk **«📱 Panel»** poniżej! 👇",
@@ -273,6 +273,6 @@ MOTIVATIONS = {
 }
 
 def get_random_motivation(lang_code="RUS"):
-    """Возвращает случайную цитату из словаря по коду языка."""
+    """Returns a random motivational quote based on the language code."""
     quotes = MOTIVATIONS.get(lang_code, MOTIVATIONS["RUS"])
     return random.choice(quotes)

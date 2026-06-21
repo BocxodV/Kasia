@@ -1,7 +1,7 @@
 // js/modules/tabs.js
 import { tg } from '../core/telegram.js';
 
-// --- МАГИЯ ПОЛАРОИДОВ ---
+// --- Polaroid Image Generator ---
 const categoryMap = {
     'shift': 'shift',
     'garage': 'garage',
@@ -21,7 +21,7 @@ export function updatePolaroid(tabId) {
     const randomNum = Math.floor(Math.random() * 5) + 1;
     const imgElement = document.querySelector(`#${tabId} .kasiaAvatar`);
     
-    // Файлы, которые мы заменили на .png (новые арты Каси)
+    // File extensions configuration mapping for category assets
     const pngCategories = new Set(['garage', 'envelope', 'analytics']);
     
     if (imgElement) {
@@ -35,7 +35,7 @@ export function updatePolaroid(tabId) {
     }
 }
 
-// --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК ---
+// --- Tab Switching Logic ---
 const tabsOrder = ['shift', 'garage', 'route', 'envelope', 'delete', 'export', 'analytics', 'savings', 'settings'];
 
 export function openTab(tabId) {
@@ -50,20 +50,20 @@ export function openTab(tabId) {
         targetContent.classList.add("active");
         document.querySelector('.planner-page').scrollTop = 0;
         
-        updatePolaroid(tabId); // Вызываем рулетку картинок
+        updatePolaroid(tabId); // Randomly update polaroid image
         setTimeout(() => { targetContent.classList.add("page-fade"); }, 10);
     }
   
     const targetTab = document.getElementById("tab_" + tabId);
     if (targetTab) targetTab.classList.add("active");
 
-    // Обращаемся к tg, который мы импортировали сверху
+    // Call Telegram Haptic Feedback interface
     if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
-// --- ЛОГИКА СВАЙПОВ ОТКЛЮЧЕНА ---
+// --- Touch Swipe Event Listeners Disabled ---
 export function setupSwipes() {
-    // Оставляем только проверку статуса для полароида, сами свайпы убраны по запросу.
+    // Bind polaroid update specifically to shift status changes
     const statusInput = document.getElementById("statusInput");
     if (statusInput) {
         statusInput.addEventListener("change", function () {
