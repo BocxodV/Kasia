@@ -29,7 +29,7 @@ The project strictly adheres to the high engineering standards of the course, le
                            [User Approves "Yes"]
                                     │
                                     ▼
-                           Node: Database Tool ──> [PostgreSQL / Invoice Receipt]
+                           Node: Database Tool ──> [PostgreSQL / Telegram Text Receipt]
 ```
 
 ### 1. Graph Workflow API (ADK 2.0)
@@ -64,15 +64,15 @@ Security and data physical limits are strictly enforced inside code nodes rather
 * **AI Engine**: Google GenAI SDK (`gemini-3.5-flash` / `gemini-1.5-flash`)  
 * **Database**: PostgreSQL (Cloud instance via Neon database pooling)  
 * **Telemetry**: LangSmith / Native structured logging  
-* **Deployment**: Docker Multi-stage builds, Google Cloud Build, Google Cloud Run (Fully serverless container scaling, Webhook event architecture)  
+* **Deployment**: Docker containerization, Google Cloud Build, Google Cloud Run (Fully serverless container scaling, Webhook event architecture)  
 
 ---
 
 ## 🚀 Local Development & Setup
 ### 1. Clone the Repository:
 ```bash
-git clone https://github.com/BocxodV/e-ksiegowa.git
-cd e-ksiegowa
+git clone https://github.com/BocxodV/Kasia.git
+cd Kasia
 ```
 
 ### 2. Environment Configuration:
