@@ -29,4 +29,10 @@ def validate_shift_data(parsed_data: dict) -> list[str]:
                 f"must be empty or 0 (got work_hours={work_hours}, driving_hours={driving_hours})."
             )
 
+    # Rule 3: Status must be one of 'Work', 'L4', 'Urlop' and not empty
+    if not status or status not in ("Work", "L4", "Urlop"):
+        errors.append(
+            f"Invalid or missing status '{status}'. Status must be 'Work', 'L4', or 'Urlop'."
+        )
+
     return errors
