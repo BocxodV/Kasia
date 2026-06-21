@@ -1,9 +1,9 @@
-/* --- СТИЛИ ДЛЯ ВКЛАДКИ: АНАЛИТИКА --- */
+/* --- STYLING FOR TAB: ANALYTICS --- */
 
-/* Коробка для месяца аналитики */
+/* Container for monthly analytics */
 .analytics-box {
     background: rgba(162, 155, 254, 0.15);
-    /* Легкий фиолетовый оттенок */
+    /* Light purple tint */
     border: 1px dashed var(--hint-ink);
     border-radius: 12px;
     padding: 5px 10px;
@@ -15,14 +15,14 @@
     margin-bottom: 0;
 }
 
-/* Кнопка в стиле графиков */
+/* Button styled for analytics charts */
 .btn-analytics {
     background-color: #a29bfe;
-    /* Приятный мягко-фиолетовый цвет */
+    /* Pleasant soft purple color */
     color: var(--ink-color);
     border: 2px solid var(--ink-color);
     border-radius: 15px 20px 25px 10px / 25px 15px 10px 20px;
-    /* Крафтовая кривизна */
+    /* Handcrafted curve */
     width: 100%;
     padding: 12px;
     font-size: 22px;

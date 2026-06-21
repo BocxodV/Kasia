@@ -1,6 +1,6 @@
-/* --- СТИЛИ ДЛЯ ВКЛАДКИ: МАРШРУТ --- */
+/* --- STYLING FOR TAB: ROUTE --- */
 
-/* Коробка для точек А и Б */
+/* Container for points A and B */
 .route-box {
     background: rgba(255, 255, 255, 0.4);
     border: 1px dashed var(--hint-ink);
@@ -19,14 +19,14 @@
     margin-bottom: 0;
 }
 
-/* Стилизация приклеенной мини-карты */
+/* Styling for the embedded mini-map */
 .map-container {
     margin-bottom: 20px;
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
     overflow: hidden;
     transform: rotate(-1.5deg);
-    /* Наклон в левую сторону */
+    /* Tilt to the left */
     background: #ffffff;
     padding: 6px;
     border: 1px solid #e0e0e0;
@@ -40,17 +40,17 @@
 .map-container iframe {
     border-radius: 4px;
     pointer-events: none;
-    /* Запрещаем случайный скролл карты пальцем при свайпе страницы */
+    /* Prevent accidental map scrolling with finger when swiping the page */
 }
 
-/* Спец-кнопка для навигатора в крафтовом стиле */
+/* Custom navigator button in handcrafted style */
 .btn-map {
     background-color: #74b9ff;
-    /* Небесно-голубой цвет дороги */
+    /* Sky blue road color */
     color: var(--ink-color);
     border: 2px solid var(--ink-color);
     border-radius: 25px 10px 15px 20px / 10px 25px 12px 15px;
-    /* Фирменная кривизна скетча */
+    /* Signature sketchy curvature */
     width: 100%;
     padding: 12px;
     font-size: 20px;

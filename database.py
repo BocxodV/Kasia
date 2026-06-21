@@ -161,7 +161,7 @@ async def delete_work_log(user_id, log_date):
     p = await get_pool()
     async with p.acquire() as db:
         status = await db.execute("DELETE FROM work_logs WHERE user_id=$1 AND log_date=$2", user_id, log_date)
-        return int(status.split()[-1]) # Парсим "DELETE 1" в 1
+        return int(status.split()[-1]) # Parses "DELETE 1" to 1
 
 async def get_monthly_net_sum(user_id, month_year):
     p = await get_pool()

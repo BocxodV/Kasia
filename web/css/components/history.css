@@ -1,9 +1,9 @@
-/* --- СТИЛИ ДЛЯ ВКЛАДКИ: ИСТОРИЯ --- */
+/* --- STYLING FOR TAB: HISTORY --- */
 
-/* Коробка для архивного месяца */
+/* Container for archived month selection */
 .history-box {
     background: rgba(223, 230, 233, 0.4);
-    /* Легкий пыльно-архивный оттенок */
+    /* Light dusty archive tint */
     border: 1px dashed var(--hint-ink);
     border-radius: 12px;
     padding: 5px 10px;
@@ -12,18 +12,18 @@
 
 .history-box .form-group {
     border-bottom: none;
-    /* Тут всего одно поле, разделительная линия не нужна */
+    /* Only one field here, divider line not needed */
     margin-bottom: 0;
 }
 
-/* Кнопка в виде архивной папки */
+/* Button styled like an archive folder */
 .btn-history {
     background-color: #b2bec3;
-    /* Строгий серый цвет */
+    /* Solid gray color */
     color: var(--ink-color);
     border: 2px solid var(--ink-color);
     border-radius: 10px 25px 15px 20px / 20px 10px 25px 15px;
-    /* Уникальная крафтовая кривизна */
+    /* Unique handcrafted curve */
     width: 100%;
     padding: 12px;
     font-size: 22px;

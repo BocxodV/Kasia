@@ -1,9 +1,9 @@
-/* --- СТИЛИ ДЛЯ ВКЛАДКИ: АУДИТ (Audyt wyrównania) --- */
+/* --- STYLING FOR TAB: AUDIT (Audyt wyrównania) --- */
 
-/* Коробка для ввода данных зарплаты */
+/* Container for entering salary details */
 .audit-box {
     background: rgba(253, 203, 110, 0.15);
-    /* Легкий золотисто-бумажный оттенок */
+    /* Light golden paper tint */
     border: 1px dashed var(--hint-ink);
     border-radius: 12px;
     padding: 5px 10px;
@@ -20,14 +20,14 @@
     margin-bottom: 0;
 }
 
-/* Спец-кнопка для аудита в крафтовом стиле */
+/* Custom audit button in handcrafted style */
 .btn-audit {
     background-color: #ffeaa7;
-    /* Светло-желтый фоновый цвет */
+    /* Light yellow background color */
     color: var(--ink-color);
     border: 2px solid var(--ink-color);
     border-radius: 15px 25px 12px 20px / 25px 15px 20px 10px;
-    /* Фирменная кривизна скетча */
+    /* Signature sketchy curvature */
     width: 100%;
     padding: 12px;
     font-size: 22px;

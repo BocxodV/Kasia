@@ -1,9 +1,9 @@
-/* --- СТИЛИ ДЛЯ ВКЛАДКИ: ЭКСПОРТ EXCEL --- */
+/* --- STYLING FOR TAB: EXCEL EXPORT --- */
 
-/* Коробка для месяца экспорта */
+/* Container for export month selection */
 .export-box {
     background: rgba(85, 239, 196, 0.15);
-    /* Легкий мятно-зеленый оттенок */
+    /* Light mint green tint */
     border: 1px dashed var(--hint-ink);
     border-radius: 12px;
     padding: 5px 10px;
@@ -15,14 +15,14 @@
     margin-bottom: 0;
 }
 
-/* Кнопка в стиле Excel */
+/* Button styled for Excel export */
 .btn-export {
     background-color: #55efc4;
-    /* Яркий мятный цвет */
+    /* Bright mint green color */
     color: var(--ink-color);
     border: 2px solid var(--ink-color);
     border-radius: 20px 10px 15px 25px / 15px 20px 10px 15px;
-    /* Уникальная крафтовая кривизна */
+    /* Unique handcrafted curve */
     width: 100%;
     padding: 12px;
     font-size: 22px;

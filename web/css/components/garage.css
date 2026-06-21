@@ -95,7 +95,7 @@
     font-style: italic;
 }
 
-/* --- Стили для камеры, перенесенные из инлайнов HTML --- */
+/* --- Camera styles migrated from inline HTML styling --- */
 
 #cameraContainer {
     display: none;

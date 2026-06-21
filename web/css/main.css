@@ -1,6 +1,6 @@
 /* /web/css/main.css */
 
-/* --- 1. ИМПОРТ КОМПОНЕНТОВ (ВКЛАДОК) --- */
+/* --- 1. COMPONENT IMPORTS (TABS) --- */
 @import url('./components/garage.css');
 @import url('./components/route.css');
 @import url('./components/envelope.css');
@@ -10,7 +10,7 @@
 @import url('./components/savings.css');
 @import url('./components/settings.css');
 
-/* --- 2. ЯДРО: ЛАМПОВЫЙ БЛОКНОТ И ПАЛИТРА --- */
+/* --- 2. CORE: RETRO NOTEBOOK & COLOR PALETTE --- */
 :root {
     --paper-bg: #f9f8f3;
     --paper-line: #e1e1e1;
@@ -26,7 +26,7 @@ body {
     padding: 15px 10px;
     background-color: #d9d0c1;
     font-family: 'Neucha', cursive;
-    /* Используем переменную, которую выставляем через JS из tg.viewportHeight */
+    /* Use custom CSS variable set via JS from tg.viewportHeight */
     height: var(--tg-viewport-height, 100vh);
     box-sizing: border-box;
     overflow: hidden;
@@ -137,7 +137,7 @@ body {
     border-bottom: none;
 }
 
-/* Наш новый класс для замены инлайнового border-top */
+/* Class replacing inline border-top styling */
 .row-divider {
     border-top: 1px solid rgba(118, 118, 128, 0.15);
 }

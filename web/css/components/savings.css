@@ -1,8 +1,8 @@
-/* --- СТИЛИ ДЛЯ ВКЛАДКИ: КОПИЛКА --- */
+/* --- STYLING FOR TAB: SAVINGS GOAL --- */
 
 .savings-box {
     background: rgba(253, 203, 110, 0.15);
-    /* Теплый, солнечный фон */
+    /* Warm, sunny background */
     border: 1px dashed var(--hint-ink);
     border-radius: 12px;
     padding: 20px 15px;
@@ -18,11 +18,11 @@
     font-family: 'Neucha', cursive;
 }
 
-/* Обертка для нарисованного прогресс-бара */
+/* Wrapper for the sketchy progress bar */
 .progress-wrapper {
     background: #ffffff;
     border-radius: 15px 25px 20px 10px / 20px 15px 25px 15px;
-    /* Скетч-контур */
+    /* Sketchy outline */
     height: 30px;
     width: 100%;
     overflow: hidden;
@@ -31,15 +31,15 @@
     box-shadow: inset 2px 3px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* Сама заполняющаяся линия */
+/* The filling progress bar itself */
 .progress-bar {
     background-color: var(--highlight-yellow);
-    /* Наш фирменный текстовыделитель */
+    /* Our custom highlighter color */
     height: 100%;
     width: 0%;
-    /* Стартуем с нуля, ширину задаст JS */
+    /* Starts at 0%, width is set dynamically via JS */
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Плавная анимация заливки */
+    /* Smooth progress fill transition */
     border-right: 2px solid var(--ink-color);
 }
 
